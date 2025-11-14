@@ -41,3 +41,10 @@ next-env.d.ts
 .convex
 convex/_generated
 
+# IDE
+.cursor/
+.vscode/
+
+# separate project
+/tsvtool/
+
