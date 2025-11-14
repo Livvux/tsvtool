@@ -1,0 +1,73 @@
+{
+    "branding": {
+      "organizationName": "TSV Strassenpfoten e.V.",
+      "guideTitle": "Branding Guide & Design System",
+      "colorPalette": [
+        {
+          "name": "Link / Accent",
+          "hex": "#09202C"
+        },
+        {
+          "name": "Primary",
+          "hex": "#5C82A1"
+        },
+        {
+          "name": "Background",
+          "hex": "#FFFFFF"
+        },
+        {
+          "name": "Text Primary",
+          "hex": "#4A4E57"
+        },
+        {
+          "name": "Input Border",
+          "hex": "#CCCCCC"
+        }
+      ],
+      "typography": {
+        "fontSizes": {
+          "h1": "36px",
+          "h2": "28px",
+          "body": "18px"
+        },
+        "fontFamilies": [
+          {
+            "name": "Primary Font Stack",
+            "stack": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Oxygen-Sans\", Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif"
+          },
+          {
+            "name": "Heading Font",
+            "stack": "-apple-system (System Font)"
+          },
+          {
+            "name": "Body Font",
+            "stack": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Oxygen-Sans\", Ubuntu, Cantarell, \"Helvetica Neue\", sans-serif"
+          }
+        ]
+      },
+      "logos": [
+        {
+          "type": "Main Logo",
+          "url": "https://tsvstrassenpfoten.de/wp-content/uploads/2024/09/TSV-Strassenpfoten-Logo.webp"
+        },
+        {
+          "type": "Favicon",
+          "url": "https://tsvstrassenpfoten.de/wp-content/uploads/2023/03/favicon.svg"
+        }
+      ],
+      "designSystem": {
+        "colorScheme": "Light",
+        "baseSpacingUnit": "4px",
+        "borderRadius": "6px",
+        "inputBorderColor": "#CCCCCC",
+        "inputBorderRadius": "6px",
+        "framework": "WordPress 6.8.3"
+      },
+      "websiteMetadata": {
+        "title": "TSV Strassenpfoten e.V. 🐾 Hunde & Katzen adoptieren",
+        "description": "Möchtest du Hunde oder Katzen adoptieren? 🐶🐱 TSV Strassenpfoten e.V. bietet liebevolle Tiere ein Zuhause. Finde deinen neuen tierischen Begleiter! ❤️",
+        "language": "German (de)",
+        "siteName": "TSV Strassenpfoten e.V."
+      }
+    }
+  }
