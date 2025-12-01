@@ -5,6 +5,7 @@
 **TSVTool** is a modern animal management system for TSV Strassenpfoten e.V., built with Next.js 16 and Convex. The system manages the workflow from animal profile creation (in Bulgarian) through translation, review, and final distribution to multiple external platforms.
 
 ### Purpose
+
 - **Input Team (Bulgarian)**: Creates animal profiles in Bulgarian
 - **Manager Team (German)**: Reviews, edits, and finalizes profiles
 - **Admin**: Full system access and user management
@@ -15,6 +16,7 @@
 ## Tech Stack
 
 ### Frontend
+
 - **Next.js 16.0.3** (App Router)
 - **React 19.2.0**
 - **TypeScript 5.9.3**
@@ -23,10 +25,12 @@
 - **React Hook Form 7.66.0** with Zod validation
 
 ### Backend
+
 - **Convex 1.29.3** (Database, File Storage, Actions)
 - **Clerk** (Authentication via @clerk/nextjs)
 
 ### Development Tools
+
 - **Vitest 2.1.8** (Testing)
 - **ESLint 9.39.1** with Next.js config
 - **Turbopack** (via `next dev --turbo`)
@@ -36,6 +40,7 @@
 ## Next.js 16 Configuration
 
 ### Key Features Enabled
+
 - **App Router**: All routes use the App Router pattern
 - **React Server Components**: Default for all components
 - **Client Components**: Marked with `'use client'` directive
@@ -43,6 +48,7 @@
 - **Clerk Middleware**: Uses `middleware.ts` with `clerkMiddleware` for authentication
 
 ### Performance Optimizations
+
 - **Package Import Optimization**: Optimized imports for `convex/react` and Radix UI
 - **Image Optimization**: AVIF/WebP formats, responsive sizes
 - **Caching Headers**: Static assets cached for 1 year
@@ -52,11 +58,13 @@
   - `optimizeCss: true`
 
 ### Configuration Files
+
 - `next.config.ts`: Main Next.js configuration
 - `middleware.ts`: Clerk authentication middleware
 - `tsconfig.json`: TypeScript configuration with path aliases (`@/*`)
 
 ### Next.js DevTools Integration
+
 - **Status**: Ready for integration
 - **Note**: Next.js DevTools MCP should be initialized at session start
 - **Usage**: When available, use next-devtools-mcp for Next.js-specific API queries and documentation
@@ -152,17 +160,20 @@ TSVTool/
 ## Authentication & Authorization
 
 ### Authentication System
+
 - **Provider**: Clerk (via @clerk/nextjs)
 - **Middleware**: `middleware.ts` with `clerkMiddleware` handles route protection
 - **Public Routes**: `/`, `/sign-in`, `/sign-up`, `/api/convex/*`
 - **Protected Routes**: All `/dashboard/*` routes
 
 ### User Roles
+
 1. **admin**: Full system access, user management
 2. **input**: Create animal profiles (Bulgarian team)
 3. **manager**: Review and finalize profiles (German team)
 
 ### Authentication Flow
+
 1. User visits `/sign-in` (Clerk hosted UI)
 2. `middleware.ts` checks authentication via `clerkMiddleware`
 3. Unauthenticated users redirected to `/sign-in`
@@ -170,11 +181,13 @@ TSVTool/
 5. Role-based navigation in dashboard layout
 
 ### Clerk Configuration
+
 - JWT validation via `convex/auth.config.ts`
 - User sync on first dashboard visit
 - Session management via Clerk
 
 ### Key Files
+
 - `middleware.ts`: Route protection with `clerkMiddleware`
 - `convex/auth.config.ts`: Clerk JWT validation for Convex
 - `app/dashboard/layout.tsx`: Role-based navigation
@@ -187,6 +200,7 @@ TSVTool/
 ### Tables
 
 #### `users`
+
 ```typescript
 {
   name?: string
@@ -195,10 +209,12 @@ TSVTool/
   role: 'admin' | 'input' | 'manager'
 }
 ```
+
 **Indexes**: `tokenIdentifier`, `role`
 **Default Role**: New users default to `'input'` role
 
 #### `animals`
+
 ```typescript
 {
   // Basic Info
@@ -209,7 +225,7 @@ TSVTool/
   birthDate?: string (format: TT.MM.JJJJ)
   shoulderHeight?: string
   color: string
-  
+
   // Medical
   castrated: 'JA' | 'NEIN'
   vaccinated: 'JA' | 'NEIN' | 'teilweise'
@@ -219,29 +235,29 @@ TSVTool/
   healthText?: string
   diseases?: string
   handicap?: string
-  
+
   // Behavior
   characteristics: string
   compatibleDogs: 'JA' | 'NEIN' | 'kann getestet werden'
   compatibleCats: 'JA' | 'NEIN' | 'kann getestet werden'
   compatibleChildren: 'JA' | 'NEIN' | 'kann getestet werden'
   compatibilityText?: string
-  
+
   // Media
   gallery: string[] (storage IDs)
   videoLink?: string
   webLink?: string
-  
+
   // Content
   descShort: string (Bulgarian)
   descLong?: string (German translation)
   descShortBG?: string (original Bulgarian)
-  
+
   // Status & Workflow
   status: 'ENTWURF' | 'ABGELEHNT' | 'AKZEPTIERT' | 'FINALISIERT'
   location: string
   seekingHomeSince?: string
-  
+
   // Metadata
   createdBy: Id<'users'>
   createdByRole: 'input' | 'manager' | 'admin'
@@ -249,7 +265,7 @@ TSVTool/
   reviewedAt?: number
   finalizedBy?: Id<'users'>
   finalizedAt?: number
-  
+
   // Distribution
   distributedTo: {
     wordpress?: boolean
@@ -261,9 +277,11 @@ TSVTool/
   }
 }
 ```
+
 **Indexes**: `status`, `createdBy`, `createdBy_status`, `status_finalizedAt`
 
 #### `auditLogs`
+
 ```typescript
 {
   action: AuditAction  // Type of action performed
@@ -280,8 +298,10 @@ TSVTool/
   timestamp: number  // Unix timestamp
 }
 ```
+
 **Indexes**: `action`, `userId`, `targetType`, `timestamp`, `action_timestamp`
 **AuditAction Types**:
+
 - Animal: `ANIMAL_CREATE`, `ANIMAL_UPDATE`, `ANIMAL_DELETE`, `ANIMAL_STATUS_CHANGE`
 - User: `USER_CREATE`, `USER_UPDATE_ROLE`, `USER_DELETE`, `USER_INVITE`
 - System: `VALIDATION_SUCCESS`, `VALIDATION_FAILURE`, `TRANSLATION_SUCCESS`, `TRANSLATION_FAILURE`, `DISTRIBUTION_SUCCESS`, `DISTRIBUTION_FAILURE`, `MATCHPFOTE_SYNC_SUCCESS`, `MATCHPFOTE_SYNC_FAILURE`
@@ -293,6 +313,7 @@ TSVTool/
 ### Animal Profile Lifecycle
 
 #### 1. Creation (ENTWURF)
+
 - **Actor**: Input user (Bulgarian team)
 - **Action**: Creates animal profile via `/dashboard/input`
 - **Status**: `ENTWURF`
@@ -300,6 +321,7 @@ TSVTool/
 - **Function**: `animals.create` mutation
 
 #### 2. Validation (Automatic)
+
 - **Trigger**: Scheduled action after profile creation
 - **File**: `convex/validation.ts`
 - **Function**: `validation.validateAnimalDraft` (internalAction)
@@ -315,6 +337,7 @@ TSVTool/
   - **Invalid** → Status: `ABGELEHNT` → Logs errors
 
 #### 3. Translation (Automatic)
+
 - **Trigger**: When status changes to `AKZEPTIERT`
 - **File**: `convex/translation.ts`
 - **Function**: `translation.translateAnimalProfile` (internalAction)
@@ -329,6 +352,7 @@ TSVTool/
 - **Error Handling**: Logs errors but doesn't block workflow
 
 #### 4. Review & Finalization
+
 - **Actor**: Manager user (German team)
 - **Action**: Reviews and edits at `/dashboard/manager/[id]`
 - **Status Change**: `AKZEPTIERT` → `FINALISIERT`
@@ -337,6 +361,7 @@ TSVTool/
 - **Metadata**: Sets `finalizedBy` and `finalizedAt`
 
 #### 5. Distribution (Automatic)
+
 - **Trigger**: When status changes to `FINALISIERT`
 - **File**: `convex/distribution.ts`
 - **Function**: `distribution.distributeAnimal` (internalAction)
@@ -348,6 +373,7 @@ TSVTool/
 - **Status Update**: Updates `distributedTo` object with success/failure
 
 #### 6. matchpfote Sync (Automatic)
+
 - **Trigger**: When status changes to `FINALISIERT` (1s delay after distribution)
 - **File**: `convex/matchpfote.ts`
 - **Function**: `matchpfote.syncAnimalToMatchpfote` (internalAction)
@@ -357,6 +383,7 @@ TSVTool/
   - Error handling with status updates
 
 ### Scheduled Actions
+
 - `validation.validateAnimalDraft`: After creation (0ms delay)
 - `translation.translateAnimalProfile`: After acceptance (0ms delay)
 - `distribution.distributeAnimal`: After finalization (0ms delay)
@@ -367,6 +394,7 @@ TSVTool/
 ## API Integrations
 
 ### Google Translate API
+
 - **Purpose**: Translate Bulgarian text to German
 - **Configuration**: `GOOGLE_TRANSLATE_API_KEY` env var
 - **Implementation**: `convex/translation.ts`
@@ -375,8 +403,9 @@ TSVTool/
 - **Error Handling**: Logs errors, doesn't throw (allows workflow to continue)
 
 ### WordPress Integration
+
 - **Purpose**: Create Avada Portfolio posts
-- **Configuration**: 
+- **Configuration**:
   - `WORDPRESS_URL`
   - `WORDPRESS_APP_USERNAME`
   - `WORDPRESS_APP_PASSWORD`
@@ -386,6 +415,7 @@ TSVTool/
 - **Data**: Includes meta fields for animal attributes
 
 ### Facebook Integration
+
 - **Purpose**: Post to Facebook Page
 - **Configuration**:
   - `FACEBOOK_PAGE_ID`
@@ -395,6 +425,7 @@ TSVTool/
 - **Method**: POST with access token
 
 ### Instagram Integration
+
 - **Status**: Placeholder (needs image URL implementation)
 - **Configuration**:
   - `INSTAGRAM_BUSINESS_ACCOUNT_ID`
@@ -403,6 +434,7 @@ TSVTool/
 - **Note**: Requires media URLs for posting
 
 ### X/Twitter Integration
+
 - **Status**: Placeholder (needs OAuth 1.0a implementation)
 - **Configuration**:
   - `TWITTER_API_KEY`
@@ -413,6 +445,7 @@ TSVTool/
 - **Note**: Requires OAuth 1.0a signature library
 
 ### matchpfote API
+
 - **Purpose**: Sync animal profiles to matchpfote platform
 - **Configuration**:
   - `MATCHPFOTE_API_KEY`
@@ -435,27 +468,32 @@ TSVTool/
 ### Frontend Components
 
 #### `AnimalCard`
+
 - **Location**: `components/animal/AnimalCard.tsx`
 - **Purpose**: Display animal summary in card format
 - **Props**: `animal: Animal`, `onClick?: () => void`
 - **Features**: Status badge, basic info, clickable
 
 #### `DistributionStatus`
+
 - **Location**: `components/animal/DistributionStatus.tsx`
 - **Purpose**: Show distribution status to platforms
 
 #### `ErrorBoundary`
+
 - **Location**: `components/layout/ErrorBoundary.tsx`
 - **Purpose**: Catch and display React errors
 
 #### `LoadingSpinner`
+
 - **Location**: `components/layout/LoadingSpinner.tsx`
 - **Purpose**: Loading state indicator
 
 #### `ConvexClientProvider`
+
 - **Location**: `app/ConvexClientProvider.tsx`
 - **Purpose**: Convex client with Clerk auth integration
-- **Features**: 
+- **Features**:
   - Wraps with `ClerkProvider` and `ConvexProviderWithClerk`
   - Uses `useAuth` from Clerk for authentication
   - Theme toggle support
@@ -463,6 +501,7 @@ TSVTool/
 ### Pages
 
 #### `/dashboard/input` (Animal Creation)
+
 - **File**: `app/dashboard/input/page.tsx`
 - **Role**: `input` or `admin`
 - **Features**:
@@ -472,6 +511,7 @@ TSVTool/
   - Form submission to `animals.create`
 
 #### `/dashboard/manager/drafts` (Drafts List)
+
 - **File**: `app/dashboard/manager/drafts/page.tsx`
 - **Role**: `manager` or `admin`
 - **Features**:
@@ -479,6 +519,7 @@ TSVTool/
   - Click to edit individual animals
 
 #### `/dashboard/manager/[id]` (Animal Edit)
+
 - **File**: `app/dashboard/manager/[id]/page.tsx`
 - **Role**: `manager` or `admin`
 - **Features**:
@@ -486,16 +527,19 @@ TSVTool/
   - Finalize status (triggers distribution)
 
 #### `/dashboard/animals` (Animals List)
+
 - **File**: `app/dashboard/animals/page.tsx`
 - **Role**: `manager` or `admin`
 - **Features**: Lists all finalized animals
 
 #### `/dashboard/admin/users` (User Management)
+
 - **File**: `app/dashboard/admin/users/page.tsx`
 - **Role**: `admin` only
 - **Features**: User management and role assignment
 
 #### `/dashboard/admin/logs` (Audit Logs)
+
 - **File**: `app/dashboard/admin/logs/page.tsx`
 - **Role**: `admin` only
 - **Features**:
@@ -509,6 +553,7 @@ TSVTool/
 ### Convex Functions
 
 #### Animals (`convex/animals.ts`)
+
 - `create`: Create new animal draft (triggers validation)
 - `list`: List animals (optionally filtered by status)
 - `get`: Get single animal by ID
@@ -517,12 +562,14 @@ TSVTool/
 - `updateStatus`: Update status (triggers workflows)
 
 #### Users (`convex/users.ts`)
+
 - `list`: List all users (admin only)
 - `getCurrent`: Get current authenticated user
 - `updateRole`: Update user role (admin only)
 - `remove`: Delete user (admin only)
 
 #### Audit Log (`convex/auditLog.ts`)
+
 - `createInternal`: Internal mutation to create audit log entry (used by other functions)
 - `create`: Mutation to create audit log entry (auto-captures user)
 - `list`: Query audit logs with filtering (admin only)
@@ -531,30 +578,35 @@ TSVTool/
 - `getByTarget`: Get logs for a specific entity (admin only)
 
 #### Validation (`convex/validation.ts`)
+
 - `validateAnimalDraft`: Internal action to validate animal
 - `getAnimal`: Internal query to get animal
 - `updateAnimalStatus`: Internal mutation to update status
 - Validates required fields, formats, and gallery
 
 #### Translation (`convex/translation.ts`)
+
 - `translateAnimalProfile`: Internal action to translate animal
 - `getAnimal`: Internal query to get animal
 - `updateAnimalTranslation`: Internal mutation to update translations
 - Uses Google Translate API
 
 #### Distribution (`convex/distribution.ts`)
+
 - `distributeAnimal`: Internal action to distribute to platforms
 - `getAnimal`: Internal query to get animal
 - `updateDistributionStatus`: Internal mutation to update status
 - Updates `distributedTo` status in database
 
 #### matchpfote (`convex/matchpfote.ts`)
+
 - `syncAnimalToMatchpfote`: Internal action to sync to matchpfote
 - `getAnimal`: Internal query to get animal
 - `updateSyncStatus`: Internal mutation to update sync status
 - Includes rate limiting and retry logic
 
 #### Storage (`convex/storage.ts`)
+
 - `generateUploadUrl`: Generate upload URL for client
 - `getUrl`: Get download URL for storage ID
 
@@ -563,6 +615,7 @@ TSVTool/
 ## File Storage
 
 ### Convex Storage
+
 - **Purpose**: Store animal gallery images
 - **Implementation**: `convex/storage.ts`
 - **Functions**:
@@ -570,6 +623,7 @@ TSVTool/
   - `getUrl`: Get download URL for storage ID
 
 ### Upload Flow
+
 1. Client calls `generateUploadUrl` mutation
 2. Receives upload URL
 3. Uploads file directly to Convex storage
@@ -581,6 +635,7 @@ TSVTool/
 ## Styling & Branding
 
 ### Tailwind Configuration
+
 - **File**: `tailwind.config.ts`
 - **Brand Colors**:
   - `accent`: `#09202C`
@@ -592,6 +647,7 @@ TSVTool/
 - **Border Radius**: Default 6px
 
 ### Branding Utilities
+
 - **File**: `lib/branding.ts`
 - **Exports**: Colors, typography, logo URLs
 - **Data Source**: `docs/branding/json/branding.json`
@@ -601,12 +657,14 @@ TSVTool/
 ## Validation
 
 ### Client-Side Validation
+
 - **File**: `lib/validation.ts`
 - **Functions**:
   - `validateRequired`: Check required fields
   - `validateDateFormat`: Validate date format (TT.MM.JJJJ)
 
 ### Server-Side Validation
+
 - **File**: `convex/validation.ts`
 - **Validates**:
   - Required fields (name, breed, color, characteristics, descShort, location)
@@ -621,6 +679,7 @@ TSVTool/
 ## Logging
 
 ### Logger Utility
+
 - **File**: `lib/logger.ts`
 - **Features**:
   - Development: Pretty-printed logs with timestamps
@@ -628,7 +687,7 @@ TSVTool/
   - Sanitizes sensitive data (passwords, tokens, API keys)
   - Log levels: `debug`, `info`, `warn`, `error`
   - Error tracking with stack traces
-- **Usage**: 
+- **Usage**:
   - `logger.info(message, context)`
   - `logger.error(message, error, context)`
   - `logger.warn(message, context)`
@@ -639,6 +698,7 @@ TSVTool/
 ## Testing
 
 ### Test Setup
+
 - **Framework**: Vitest 2.1.8
 - **Config**: `vitest.config.ts`
 - **Environment**: jsdom
@@ -647,12 +707,14 @@ TSVTool/
 - **Path Alias**: `@/*` resolves to project root
 
 ### Test Files
+
 - `__tests__/components/animal/AnimalCard.test.tsx`
 - `__tests__/components/animal/DistributionStatus.test.tsx`
 - `__tests__/lib/logger.test.ts`
 - `__tests__/lib/validation.test.ts`
 
 ### Test Commands
+
 - `pnpm test`: Run tests
 - `pnpm test:ui`: Run tests with UI
 - `pnpm test:coverage`: Run tests with coverage
@@ -708,6 +770,7 @@ NEXT_PUBLIC_SITE_URL=https://tsvstrassenpfoten.de
 ## Development Guidelines
 
 ### Code Style
+
 - **TypeScript**: Strict mode enabled
 - **ESLint**: Next.js config
 - **File Length**: Keep files under 300 LOC (per user rules)
@@ -715,6 +778,7 @@ NEXT_PUBLIC_SITE_URL=https://tsvstrassenpfoten.de
 - **YAGNI/KISS**: Implement only what's needed, keep it simple
 
 ### Next.js 16 Patterns
+
 - **Server Actions**: Must be async (functions in files with `"use server"`)
 - **Middleware**: Use `middleware.ts` with `clerkMiddleware`
 - **Route Segment Config**: Use `dynamic` and `revalidate` exports
@@ -723,6 +787,7 @@ NEXT_PUBLIC_SITE_URL=https://tsvstrassenpfoten.de
 - **Convex Proxy**: Routes through `/api/convex/[...path]/route.ts`
 
 ### Convex Patterns
+
 - **Queries**: For reading data (reactive, real-time)
 - **Mutations**: For writing data (synchronous)
 - **Actions**: For external API calls and complex operations (async)
@@ -734,6 +799,7 @@ NEXT_PUBLIC_SITE_URL=https://tsvstrassenpfoten.de
 - **Error Handling**: Use `ConvexError` for user-facing errors
 
 ### Error Handling
+
 - Use `logger.error()` for error logging
 - Wrap external API calls in try-catch
 - Return meaningful error messages
@@ -741,6 +807,7 @@ NEXT_PUBLIC_SITE_URL=https://tsvstrassenpfoten.de
 - Don't throw in translation/distribution (log and continue)
 
 ### Authentication Patterns
+
 - Use `ctx.auth.getUserIdentity()` in Convex functions
 - Use `useAuth()` from `@clerk/nextjs` in client components
 - Use `clerkMiddleware` in `middleware.ts`
@@ -751,6 +818,7 @@ NEXT_PUBLIC_SITE_URL=https://tsvstrassenpfoten.de
 ## Scripts
 
 ### Development
+
 ```bash
 pnpm dev              # Start dev server with Turbopack
 pnpm build             # Build for production
@@ -758,12 +826,14 @@ pnpm start             # Start production server
 ```
 
 ### Code Quality
+
 ```bash
 pnpm lint              # Run ESLint
 pnpm type-check        # Run TypeScript type checking
 ```
 
 ### Testing
+
 ```bash
 pnpm test              # Run tests
 pnpm test:ui           # Run tests with UI
@@ -771,6 +841,7 @@ pnpm test:coverage     # Run tests with coverage
 ```
 
 ### Maintenance
+
 ```bash
 pnpm clean:cache       # Clean Next.js cache
 pnpm clean:install    # Clean install (remove node_modules)
@@ -781,6 +852,7 @@ pnpm clean:install    # Clean install (remove node_modules)
 ## Performance Optimizations
 
 ### Next.js Optimizations
+
 - Package import optimization for Convex and Radix UI
 - Image optimization (AVIF/WebP)
 - Static asset caching (1 year)
@@ -790,18 +862,22 @@ pnpm clean:install    # Clean install (remove node_modules)
 - Console.log removal in production (keeps error/warn)
 
 ### Route Segment Config
+
 All data-dependent pages use:
+
 ```typescript
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 ```
 
 ### Convex Client Optimization
+
 - Singleton pattern for client instance
 - Memoized to prevent re-renders
 - Client-side only (no SSR overhead)
 
 ### API Route Optimization
+
 - Convex API proxy uses `force-dynamic`
 - No caching at Next.js level (Convex handles its own)
 - Proper cache headers for GET requests
@@ -811,6 +887,7 @@ export const revalidate = 0;
 ## Common Tasks & Solutions
 
 ### Adding a New Animal Field
+
 1. Update `convex/schema.ts` (add field to animals table)
 2. Update `types/animal.ts` (add to AnimalFormData)
 3. Update `convex/animals.ts` (add to create/update args)
@@ -819,24 +896,28 @@ export const revalidate = 0;
 6. Update edit form in `app/dashboard/manager/[id]/page.tsx` if applicable
 
 ### Adding a New Distribution Platform
+
 1. Add function in `convex/distribution.ts`
 2. Add to `distributedTo` object in schema
 3. Call from `distributeAnimal` action
 4. Update `updateDistributionStatus` mutation
 
 ### Debugging Scheduled Actions
+
 - Check Convex dashboard for action logs
 - Use `logger.info()` and `logger.error()` in actions
 - Check action execution in Convex dashboard
 - Verify environment variables are set
 
 ### Testing Authentication
+
 - Use Clerk dashboard to create test users
 - Set roles manually in Convex database
 - Test different role permissions
 - Check middleware.ts redirects
 
 ### Adding a New Route
+
 1. Create page in `app/` directory
 2. Add route protection in `middleware.ts` if needed (update `isPublicRoute` matcher)
 3. Add navigation link in `app/dashboard/layout.tsx` if needed
@@ -918,8 +999,8 @@ export const revalidate = 0;
 
 ---
 
-*Last Updated: 2025-12-01*
-*Project Version: 0.1.0*
-*Next.js Version: 16.0.3*
-*Convex Version: 1.29.3*
-*Authentication: Clerk*
+_Last Updated: 2025-12-01_
+_Project Version: 0.1.0_
+_Next.js Version: 16.0.3_
+_Convex Version: 1.29.3_
+_Authentication: Clerk_
