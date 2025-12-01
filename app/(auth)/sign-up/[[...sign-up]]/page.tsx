@@ -3,9 +3,8 @@
 import nextDynamic from 'next/dynamic';
 import { PawLoader } from '@/components/layout/PawLoader';
 
-// Mark as dynamic to prevent static generation
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Note: Cannot use export const dynamic with cacheComponents enabled
+// Client component with ssr: false already prevents static generation
 
 // CACHE COMPONENTS FIX: Clerk SignUp accesses cookies during SSR/prerender
 // Dynamic import with ssr: false prevents server-side rendering of this component
