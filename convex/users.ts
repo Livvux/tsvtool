@@ -2,6 +2,7 @@ import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { internal } from './_generated/api';
 import type { AuditAction } from './auditLog';
+import type { RateLimitResult } from './rateLimit';
 
 /**
  * Get the current user record, or null if not authenticated or not found.
@@ -90,6 +91,7 @@ export const store = mutation({
 
 /**
  * List all users. Only accessible by admins.
+ * Logs access denied attempts for security monitoring.
  */
 export const list = query({
   handler: async (ctx) => {
@@ -102,7 +104,9 @@ export const list = query({
       .first();
 
     if (!currentUser || currentUser.role !== 'admin') {
-      throw new Error('Only admins can list users');
+      // Log access denied attempt (scheduled to avoid blocking the query)
+      // Note: Queries can't schedule, so we throw and let the frontend handle logging
+      throw new Error('ACCESS_DENIED:Only admins can list users');
     }
 
     return await ctx.db.query('users').collect();
@@ -111,6 +115,7 @@ export const list = query({
 
 /**
  * Update a user's role. Only accessible by admins.
+ * Includes rate limiting and access denied logging.
  */
 export const updateRole = mutation({
   args: {
@@ -131,8 +136,49 @@ export const updateRole = mutation({
       .first();
 
     if (!currentUser || currentUser.role !== 'admin') {
+      // Log access denied attempt
+      await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+        action: 'ACCESS_DENIED' as AuditAction,
+        userId: currentUser?._id,
+        userName: currentUser?.name,
+        userEmail: currentUser?.email ?? identity.email,
+        targetType: 'user',
+        targetId: args.userId,
+        details: JSON.stringify({ 
+          attemptedAction: 'USER_UPDATE_ROLE',
+          userRole: currentUser?.role ?? 'unknown'
+        }),
+      });
       throw new Error('Only admins can update user roles');
     }
+
+    // Check rate limit
+    const rateLimitResult = await ctx.runQuery(internal.rateLimit.checkRateLimit, {
+      userId: currentUser._id,
+      action: 'USER_UPDATE_ROLE',
+    }) as RateLimitResult;
+
+    if (!rateLimitResult.allowed) {
+      // Log rate limit exceeded
+      await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+        action: 'RATE_LIMIT_EXCEEDED' as AuditAction,
+        userId: currentUser._id,
+        userName: currentUser.name,
+        userEmail: currentUser.email,
+        targetType: 'system',
+        details: JSON.stringify({ 
+          attemptedAction: 'USER_UPDATE_ROLE',
+          resetAt: rateLimitResult.resetAt
+        }),
+      });
+      throw new Error(`Rate limit exceeded. Try again later.`);
+    }
+
+    // Record action for rate limiting
+    await ctx.runMutation(internal.rateLimit.recordAction, {
+      userId: currentUser._id,
+      action: 'USER_UPDATE_ROLE',
+    });
 
     // Get target user for audit log
     const targetUser = await ctx.db.get(args.userId);
@@ -159,6 +205,7 @@ export const updateRole = mutation({
 
 /**
  * Remove a user. Only accessible by admins.
+ * Includes rate limiting and access denied logging.
  */
 export const remove = mutation({
   args: { userId: v.id('users') },
@@ -172,12 +219,53 @@ export const remove = mutation({
       .first();
 
     if (!currentUser || currentUser.role !== 'admin') {
+      // Log access denied attempt
+      await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+        action: 'ACCESS_DENIED' as AuditAction,
+        userId: currentUser?._id,
+        userName: currentUser?.name,
+        userEmail: currentUser?.email ?? identity.email,
+        targetType: 'user',
+        targetId: args.userId,
+        details: JSON.stringify({ 
+          attemptedAction: 'USER_DELETE',
+          userRole: currentUser?.role ?? 'unknown'
+        }),
+      });
       throw new Error('Only admins can delete users');
     }
 
     if (currentUser._id === args.userId) {
       throw new Error('Cannot delete yourself');
     }
+
+    // Check rate limit
+    const rateLimitResult = await ctx.runQuery(internal.rateLimit.checkRateLimit, {
+      userId: currentUser._id,
+      action: 'USER_DELETE',
+    }) as RateLimitResult;
+
+    if (!rateLimitResult.allowed) {
+      // Log rate limit exceeded
+      await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+        action: 'RATE_LIMIT_EXCEEDED' as AuditAction,
+        userId: currentUser._id,
+        userName: currentUser.name,
+        userEmail: currentUser.email,
+        targetType: 'system',
+        details: JSON.stringify({ 
+          attemptedAction: 'USER_DELETE',
+          resetAt: rateLimitResult.resetAt
+        }),
+      });
+      throw new Error(`Rate limit exceeded. Try again later.`);
+    }
+
+    // Record action for rate limiting
+    await ctx.runMutation(internal.rateLimit.recordAction, {
+      userId: currentUser._id,
+      action: 'USER_DELETE',
+    });
 
     // Get target user data before deletion for audit log
     const targetUser = await ctx.db.get(args.userId);
@@ -201,6 +289,7 @@ export const remove = mutation({
 /**
  * Store a user invitation with role. Only accessible by admins.
  * This is called when an admin invites a user via Clerk.
+ * Includes rate limiting and access denied logging.
  */
 export const storeInvitation = mutation({
   args: {
@@ -223,8 +312,50 @@ export const storeInvitation = mutation({
       .first();
 
     if (!currentUser || currentUser.role !== 'admin') {
+      // Log access denied attempt
+      await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+        action: 'ACCESS_DENIED' as AuditAction,
+        userId: currentUser?._id,
+        userName: currentUser?.name,
+        userEmail: currentUser?.email ?? identity.email,
+        targetType: 'invitation',
+        targetName: args.email.toLowerCase(),
+        details: JSON.stringify({ 
+          attemptedAction: 'USER_INVITE',
+          userRole: currentUser?.role ?? 'unknown',
+          attemptedRole: args.role
+        }),
+      });
       throw new Error('Only admins can create invitations');
     }
+
+    // Check rate limit
+    const rateLimitResult = await ctx.runQuery(internal.rateLimit.checkRateLimit, {
+      userId: currentUser._id,
+      action: 'USER_INVITE',
+    }) as RateLimitResult;
+
+    if (!rateLimitResult.allowed) {
+      // Log rate limit exceeded
+      await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+        action: 'RATE_LIMIT_EXCEEDED' as AuditAction,
+        userId: currentUser._id,
+        userName: currentUser.name,
+        userEmail: currentUser.email,
+        targetType: 'system',
+        details: JSON.stringify({ 
+          attemptedAction: 'USER_INVITE',
+          resetAt: rateLimitResult.resetAt
+        }),
+      });
+      throw new Error(`Rate limit exceeded. You can invite max 10 users per hour.`);
+    }
+
+    // Record action for rate limiting
+    await ctx.runMutation(internal.rateLimit.recordAction, {
+      userId: currentUser._id,
+      action: 'USER_INVITE',
+    });
 
     // Check if there's already a pending invitation for this email
     const existingInvitation = await ctx.db
