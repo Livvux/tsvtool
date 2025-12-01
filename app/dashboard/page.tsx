@@ -5,6 +5,7 @@ import { api } from '@/convex/_generated/api';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { PawLoader } from '@/components/layout/PawLoader';
+import { useEffectiveRole } from '@/components/admin/ViewAsContext';
 
 export default function DashboardPage() {
   const { isLoading, isAuthenticated } = useConvexAuth();
@@ -13,18 +14,22 @@ export default function DashboardPage() {
     isAuthenticated ? undefined : 'skip'
   );
   const router = useRouter();
+  
+  // Get effective role (considering view-as mode for admins)
+  const effectiveRole = useEffectiveRole(user?.role ?? 'input');
 
   useEffect(() => {
     if (user) {
-      if (user.role === 'admin') {
+      // Use effective role for routing (allows admin to see other role's default pages)
+      if (effectiveRole === 'admin') {
         router.push('/dashboard/admin/users');
-      } else if (user.role === 'input') {
+      } else if (effectiveRole === 'input') {
         router.push('/dashboard/input');
-      } else if (user.role === 'manager') {
+      } else if (effectiveRole === 'manager') {
         router.push('/dashboard/manager/drafts');
       }
     }
-  }, [user, router]);
+  }, [user, effectiveRole, router]);
 
   if (isLoading || user === undefined) {
     return <PawLoader />;

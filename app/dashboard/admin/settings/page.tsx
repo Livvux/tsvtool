@@ -164,7 +164,7 @@ export default function SettingsPage() {
           <CardDescription>
             Status aller externen API-Integrationen
             {lastFullCheck && (
-              <span className="ml-2 text-xs text-muted-foreground">
+              <span className="ml-2 text-xs text-foreground/70 dark:text-muted-foreground">
                 (Letzte Prüfung: {lastFullCheck.toLocaleTimeString('de-DE')})
               </span>
             )}
@@ -181,7 +181,7 @@ export default function SettingsPage() {
                   <span className="text-2xl">{getApiIcon(api.name)}</span>
                   <div>
                     <div className="font-medium text-accent">{api.name}</div>
-                    <div className="text-sm text-muted-foreground">{api.message}</div>
+                    <div className="text-sm text-foreground/70 dark:text-muted-foreground">{api.message}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -203,9 +203,9 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4 text-sm">
-            <div className="p-4 rounded-lg bg-muted dark:bg-gray-800/50 border border-border">
+            <div className="p-4 rounded-lg dark:bg-gray-800/50 border border-border">
               <h4 className="font-semibold text-foreground dark:text-gray-300 mb-2">📋 Umgebungsvariablen</h4>
-              <p className="text-textPrimary dark:text-gray-400">
+              <p className="text-foreground dark:text-gray-400">
                 API-Schlüssel werden über Convex-Umgebungsvariablen konfiguriert. 
                 Verwenden Sie <code className="bg-background dark:bg-gray-800 px-1.5 py-0.5 rounded border border-border text-foreground dark:text-gray-300">npx convex env set VARIABLE_NAME value</code> um Werte zu setzen.
               </p>
@@ -214,35 +214,35 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-3 rounded border">
                 <h5 className="font-medium mb-1">Übersetzung</h5>
-                <div className="text-xs text-muted-foreground space-y-1">
+                <div className="text-xs text-foreground/80 dark:text-muted-foreground space-y-1">
                   <div><code>TRANSLATION_SERVICE</code> = google | microsoft</div>
-                  <div className="text-green-600">Google: <code>GOOGLE_TRANSLATE_API_KEY</code></div>
-                  <div className="text-blue-600">Microsoft: <code>AZURE_TRANSLATOR_KEY</code>, <code>AZURE_TRANSLATOR_REGION</code></div>
+                  <div className="text-green-600 dark:text-green-400">Google: <code>GOOGLE_TRANSLATE_API_KEY</code></div>
+                  <div className="text-blue-600 dark:text-blue-400">Microsoft: <code>AZURE_TRANSLATOR_KEY</code>, <code>AZURE_TRANSLATOR_REGION</code></div>
                 </div>
               </div>
               <div className="p-3 rounded border">
                 <h5 className="font-medium mb-1">WordPress</h5>
-                <code className="text-xs text-muted-foreground">WORDPRESS_URL, WORDPRESS_APP_USERNAME, WORDPRESS_APP_PASSWORD</code>
+                <code className="text-xs text-foreground/80 dark:text-muted-foreground">WORDPRESS_URL, WORDPRESS_APP_USERNAME, WORDPRESS_APP_PASSWORD</code>
               </div>
               <div className="p-3 rounded border">
                 <h5 className="font-medium mb-1">Facebook</h5>
-                <code className="text-xs text-muted-foreground">FACEBOOK_PAGE_ID, FACEBOOK_ACCESS_TOKEN</code>
+                <code className="text-xs text-foreground/80 dark:text-muted-foreground">FACEBOOK_PAGE_ID, FACEBOOK_ACCESS_TOKEN</code>
               </div>
               <div className="p-3 rounded border">
                 <h5 className="font-medium mb-1">Instagram</h5>
-                <code className="text-xs text-muted-foreground">INSTAGRAM_BUSINESS_ACCOUNT_ID, INSTAGRAM_ACCESS_TOKEN</code>
+                <code className="text-xs text-foreground/80 dark:text-muted-foreground">INSTAGRAM_BUSINESS_ACCOUNT_ID, INSTAGRAM_ACCESS_TOKEN</code>
               </div>
               <div className="p-3 rounded border">
                 <h5 className="font-medium mb-1">X (Twitter)</h5>
-                <code className="text-xs text-muted-foreground">TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET</code>
+                <code className="text-xs text-foreground/80 dark:text-muted-foreground">TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET</code>
               </div>
               <div className="p-3 rounded border">
                 <h5 className="font-medium mb-1">matchpfote</h5>
-                <code className="text-xs text-muted-foreground">MATCHPFOTE_API_KEY, MATCHPFOTE_API_URL</code>
+                <code className="text-xs text-foreground/80 dark:text-muted-foreground">MATCHPFOTE_API_KEY, MATCHPFOTE_API_URL</code>
               </div>
               <div className="p-3 rounded border">
                 <h5 className="font-medium mb-1">Cloudflare R2</h5>
-                <code className="text-xs text-muted-foreground">R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME</code>
+                <code className="text-xs text-foreground/80 dark:text-muted-foreground">R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME</code>
               </div>
             </div>
           </div>
@@ -260,20 +260,20 @@ export default function SettingsPage() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div className="p-3 rounded border">
-              <div className="text-muted-foreground">Version</div>
-              <div className="font-medium">1.0.0</div>
+              <div className="text-foreground/70 dark:text-muted-foreground">Version</div>
+              <div className="font-medium text-foreground">1.0.0</div>
             </div>
             <div className="p-3 rounded border">
-              <div className="text-muted-foreground">Framework</div>
-              <div className="font-medium">Next.js 16</div>
+              <div className="text-foreground/70 dark:text-muted-foreground">Framework</div>
+              <div className="font-medium text-foreground">Next.js 16</div>
             </div>
             <div className="p-3 rounded border">
-              <div className="text-muted-foreground">Backend</div>
-              <div className="font-medium">Convex</div>
+              <div className="text-foreground/70 dark:text-muted-foreground">Backend</div>
+              <div className="font-medium text-foreground">Convex</div>
             </div>
             <div className="p-3 rounded border">
-              <div className="text-muted-foreground">Auth</div>
-              <div className="font-medium">Clerk</div>
+              <div className="text-foreground/70 dark:text-muted-foreground">Auth</div>
+              <div className="font-medium text-foreground">Clerk</div>
             </div>
           </div>
         </CardContent>

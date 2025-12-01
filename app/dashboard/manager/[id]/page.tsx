@@ -213,6 +213,15 @@ export default function EditAnimalPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8 space-y-8">
+               {/* Bulgarian Original */}
+               {animal.characteristicsBG && (
+                 <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border">
+                   <Label className="text-sm font-medium text-muted-foreground">Original (Bulgarisch)</Label>
+                   <p className="text-base text-foreground/80 whitespace-pre-wrap italic leading-relaxed">
+                     {animal.characteristicsBG}
+                   </p>
+                 </div>
+               )}
                <div className="space-y-3">
                   <Label htmlFor="characteristics" className="text-lg font-semibold text-foreground">Wesen (Übersetzt)</Label>
                   <Textarea

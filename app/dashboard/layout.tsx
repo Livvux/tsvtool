@@ -17,46 +17,22 @@ import {
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { AnimalSearch } from '@/components/animal/AnimalSearch';
 import Link from 'next/link';
+import { ViewAsProvider, useEffectiveRole } from '@/components/admin/ViewAsContext';
+import { ViewAsSelector, ViewAsBanner } from '@/components/admin/ViewAsSelector';
 
-export default function DashboardLayout({
+function DashboardLayoutInner({
   children,
+  user,
 }: {
   children: React.ReactNode;
+  user: { _id: string; name?: string; email: string; role: 'admin' | 'input' | 'manager' };
 }) {
-  const { isLoaded, isSignedIn, userId } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const storeUser = useMutation(api.users.store);
-  const user = useQuery(api.users.getCurrent);
-  const [isStoring, setIsStoring] = useState(false);
   const userButtonRef = useRef<HTMLDivElement>(null);
-
-  // Sync user with Convex database
-  useEffect(() => {
-    if (isSignedIn && userId) {
-      if (user === undefined) {
-        setIsStoring(true);
-      }
-      
-      storeUser()
-        .then(() => setIsStoring(false))
-        .catch((err) => {
-          console.error('Failed to store user:', err);
-          setIsStoring(false);
-        });
-    }
-  }, [isSignedIn, userId, storeUser, user === undefined]);
-
-  // Redirect if not signed in
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push('/sign-in');
-    }
-  }, [isLoaded, isSignedIn, router]);
-
-  if (!isLoaded || !isSignedIn || (isStoring && user === undefined) || !user) {
-    return <PawLoader text={!user ? "Profil wird geladen..." : "Laden..."} />;
-  }
+  
+  // Get effective role (considering view-as mode)
+  const effectiveRole = useEffectiveRole(user.role);
 
   const isActive = (path: string) => pathname?.startsWith(path);
 
@@ -70,6 +46,9 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-background">
+      {/* View As Banner - shows when admin is viewing as another role */}
+      <ViewAsBanner />
+      
       <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -101,9 +80,9 @@ export default function DashboardLayout({
                 </h1>
               </div>
 
-              {/* Desktop Navigation */}
+              {/* Desktop Navigation - uses effectiveRole for view-as */}
               <nav className="hidden md:flex items-center gap-6 ml-4">
-                {(user.role === 'manager' || user.role === 'admin') && (
+                {(effectiveRole === 'manager' || effectiveRole === 'admin') && (
                   <>
                     <Link 
                       href="/dashboard/manager/drafts"
@@ -129,7 +108,7 @@ export default function DashboardLayout({
                     </Link>
                   </>
                 )}
-                {(user.role === 'input' || user.role === 'admin') && (
+                {(effectiveRole === 'input' || effectiveRole === 'admin') && (
                   <Link 
                     href="/dashboard/input"
                     className={cn(
@@ -147,13 +126,20 @@ export default function DashboardLayout({
 
             {/* Search & User Actions */}
             <div className="flex items-center gap-4">
-              {/* Search - visible for manager/admin roles */}
-              {(user.role === 'manager' || user.role === 'admin') && (
+              {/* Search - visible for manager/admin roles (using effectiveRole) */}
+              {(effectiveRole === 'manager' || effectiveRole === 'admin') && (
                 <div className="hidden lg:block w-64">
                   <AnimalSearch />
                 </div>
               )}
               <ThemeToggle />
+              
+              {/* View As Selector - only for actual admins */}
+              {user.role === 'admin' && (
+                <ViewAsSelector />
+              )}
+              
+              {/* Admin Tools - only for actual admins (not affected by view-as) */}
               {user.role === 'admin' && (
                 <div className="hidden md:flex items-center gap-1 border-r border-border pr-4 mr-2">
                   <Button 
@@ -211,9 +197,9 @@ export default function DashboardLayout({
             </div>
           </div>
           
-          {/* Mobile Navigation (visible only on small screens) */}
+          {/* Mobile Navigation (visible only on small screens) - uses effectiveRole */}
           <div className="md:hidden flex items-center gap-4 mt-4 overflow-x-auto pb-2 border-t border-border pt-3">
-            {(user.role === 'manager' || user.role === 'admin') && (
+            {(effectiveRole === 'manager' || effectiveRole === 'admin') && (
               <>
                 <Link 
                   href="/dashboard/manager/drafts"
@@ -235,7 +221,7 @@ export default function DashboardLayout({
                 </Link>
               </>
             )}
-            {(user.role === 'input' || user.role === 'admin') && (
+            {(effectiveRole === 'input' || effectiveRole === 'admin') && (
               <Link 
                 href="/dashboard/input"
                 className={cn(
@@ -254,5 +240,52 @@ export default function DashboardLayout({
         {children}
       </main>
     </div>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { isLoaded, isSignedIn, userId } = useAuth();
+  const router = useRouter();
+  const storeUser = useMutation(api.users.store);
+  const user = useQuery(api.users.getCurrent);
+  const [isStoring, setIsStoring] = useState(false);
+
+  // Sync user with Convex database
+  useEffect(() => {
+    if (isSignedIn && userId) {
+      if (user === undefined) {
+        setIsStoring(true);
+      }
+      
+      storeUser()
+        .then(() => setIsStoring(false))
+        .catch((err) => {
+          console.error('Failed to store user:', err);
+          setIsStoring(false);
+        });
+    }
+  }, [isSignedIn, userId, storeUser, user === undefined]);
+
+  // Redirect if not signed in
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/sign-in');
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded || !isSignedIn || (isStoring && user === undefined) || !user) {
+    return <PawLoader text={!user ? "Profil wird geladen..." : "Laden..."} />;
+  }
+
+  return (
+    <ViewAsProvider isAdmin={user.role === 'admin'}>
+      <DashboardLayoutInner user={user}>
+        {children}
+      </DashboardLayoutInner>
+    </ViewAsProvider>
   );
 }

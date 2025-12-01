@@ -1,6 +1,8 @@
 'use server';
 
 import { clerkClient, auth } from '@clerk/nextjs/server';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
 import { logger } from '@/lib/logger';
 
 export interface InviteUserResult {
@@ -18,10 +20,33 @@ export async function inviteUser(
   role: 'admin' | 'input' | 'manager'
 ): Promise<InviteUserResult> {
   try {
-    // Check authentication and admin role
+    // Check authentication
     const { userId, getToken } = await auth();
     if (!userId) {
       return { success: false, error: 'Nicht authentifiziert' };
+    }
+
+    // Get Convex token and verify admin role
+    const token = await getToken({ template: 'convex' });
+    if (!token) {
+      return { success: false, error: 'Authentifizierungsfehler' };
+    }
+
+    // Create Convex client and verify user is admin
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    if (!convexUrl) {
+      logger.error('NEXT_PUBLIC_CONVEX_URL not configured', new Error('Missing env var'));
+      return { success: false, error: 'Serverkonfigurationsfehler' };
+    }
+
+    const convex = new ConvexHttpClient(convexUrl);
+    convex.setAuth(token);
+
+    // Fetch current user from Convex to verify admin role
+    const currentUser = await convex.query(api.users.getCurrent);
+    if (!currentUser || currentUser.role !== 'admin') {
+      logger.warn('Non-admin attempted to invite user', { userId, attemptedRole: role });
+      return { success: false, error: 'Nur Administratoren können Benutzer einladen' };
     }
 
     // Validate email
