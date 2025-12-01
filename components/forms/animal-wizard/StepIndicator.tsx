@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { Check } from 'lucide-react';
 import { WIZARD_STEPS } from './types';
 
 interface StepIndicatorProps {
@@ -26,13 +27,14 @@ export function StepIndicator({ currentStep, completedSteps }: StepIndicatorProp
           const isCompleted = completedSteps.includes(step.id);
           const isCurrent = step.id === currentStep;
           const isPast = step.id < currentStep;
+          const StepIcon = step.icon;
           
           return (
             <div key={step.id} className="flex flex-col items-center relative z-10">
               {/* Step circle */}
               <div
                 className={cn(
-                  'w-12 h-12 rounded-full flex items-center justify-center text-xl',
+                  'w-12 h-12 rounded-full flex items-center justify-center',
                   'transition-all duration-300 ease-out',
                   'border-2 shadow-sm',
                   isCurrent && 'bg-primary border-primary text-primary-foreground scale-110 shadow-lg shadow-primary/30',
@@ -42,11 +44,9 @@ export function StepIndicator({ currentStep, completedSteps }: StepIndicatorProp
                 )}
               >
                 {isCompleted && !isCurrent ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <Check className="w-5 h-5" strokeWidth={2.5} />
                 ) : (
-                  <span>{step.icon}</span>
+                  <StepIcon className="w-5 h-5" />
                 )}
               </div>
               
@@ -75,8 +75,12 @@ export function StepIndicator({ currentStep, completedSteps }: StepIndicatorProp
       {/* Mobile view - simplified */}
       <div className="md:hidden">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-foreground">
-            {WIZARD_STEPS[currentStep - 1].icon} {WIZARD_STEPS[currentStep - 1].title}
+          <span className="text-sm font-medium text-foreground flex items-center gap-2">
+            {(() => {
+              const StepIcon = WIZARD_STEPS[currentStep - 1].icon;
+              return <StepIcon className="w-4 h-4" />;
+            })()}
+            {WIZARD_STEPS[currentStep - 1].title}
           </span>
           <span className="text-sm text-muted-foreground">
             Стъпка {currentStep} от {WIZARD_STEPS.length}
@@ -98,4 +102,3 @@ export function StepIndicator({ currentStep, completedSteps }: StepIndicatorProp
     </div>
   );
 }
-

@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Card, CardContent } from '@/components/ui/card';
+import { PawPrint, Dog, Cat, Lightbulb } from 'lucide-react';
 import type { StepProps } from '../types';
 import type { AnimalType, Gender } from '@/types/animal';
 
@@ -13,7 +14,7 @@ export function BasicInfoStep({ formData, onUpdate, errors }: StepProps) {
     <div className="space-y-6 animate-in fade-in-50 slide-in-from-right-5 duration-300">
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-          <span className="text-3xl">🐾</span>
+          <PawPrint className="w-8 h-8 text-primary" />
         </div>
         <h2 className="text-2xl font-semibold text-foreground">
           Grundinformationen
@@ -26,8 +27,8 @@ export function BasicInfoStep({ formData, onUpdate, errors }: StepProps) {
       <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
         <CardContent className="pt-6 space-y-6">
           {/* Name & Animal Type Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="name" className="text-base">
                 Име / Name <span className="text-destructive">*</span>
               </Label>
@@ -43,7 +44,7 @@ export function BasicInfoStep({ formData, onUpdate, errors }: StepProps) {
               )}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="animal" className="text-base">
                 Вид животно / Tier-Art <span className="text-destructive">*</span>
               </Label>
@@ -57,12 +58,14 @@ export function BasicInfoStep({ formData, onUpdate, errors }: StepProps) {
                 <SelectContent>
                   <SelectItem value="Hund">
                     <span className="flex items-center gap-2">
-                      🐕 <span>Куче / Hund</span>
+                      <Dog className="w-4 h-4" />
+                      <span>Куче / Hund</span>
                     </span>
                   </SelectItem>
                   <SelectItem value="Katze">
                     <span className="flex items-center gap-2">
-                      🐈 <span>Котка / Katze</span>
+                      <Cat className="w-4 h-4" />
+                      <span>Котка / Katze</span>
                     </span>
                   </SelectItem>
                 </SelectContent>
@@ -71,8 +74,8 @@ export function BasicInfoStep({ formData, onUpdate, errors }: StepProps) {
           </div>
 
           {/* Gender & Breed Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="gender" className="text-base">
                 Пол / Geschlecht <span className="text-destructive">*</span>
               </Label>
@@ -85,20 +88,16 @@ export function BasicInfoStep({ formData, onUpdate, errors }: StepProps) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="weiblich">
-                    <span className="flex items-center gap-2">
-                      ♀️ <span>Женски / Weiblich</span>
-                    </span>
+                    <span>Женски / Weiblich</span>
                   </SelectItem>
                   <SelectItem value="männlich">
-                    <span className="flex items-center gap-2">
-                      ♂️ <span>Мъжки / Männlich</span>
-                    </span>
+                    <span>Мъжки / Männlich</span>
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="breed" className="text-base">
                 Порода / Rasse <span className="text-destructive">*</span>
               </Label>
@@ -116,8 +115,8 @@ export function BasicInfoStep({ formData, onUpdate, errors }: StepProps) {
           </div>
 
           {/* Birth Date, Size, Color Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="birthDate" className="text-base">
                 Рождена дата / Geboren
               </Label>
@@ -130,7 +129,7 @@ export function BasicInfoStep({ formData, onUpdate, errors }: StepProps) {
               </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="shoulderHeight" className="text-base">
                 Размер / Schulterhöhe (cm)
               </Label>
@@ -145,7 +144,7 @@ export function BasicInfoStep({ formData, onUpdate, errors }: StepProps) {
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="color" className="text-base">
                 Цвят / Farbe <span className="text-destructive">*</span>
               </Label>
@@ -166,7 +165,7 @@ export function BasicInfoStep({ formData, onUpdate, errors }: StepProps) {
 
       {/* Helpful tip */}
       <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/5 border border-primary/10">
-        <span className="text-xl">💡</span>
+        <Lightbulb className="w-5 h-5 text-primary mt-0.5" />
         <div>
           <p className="text-sm font-medium text-foreground">Съвет / Tipp</p>
           <p className="text-sm text-muted-foreground">
@@ -178,4 +177,3 @@ export function BasicInfoStep({ formData, onUpdate, errors }: StepProps) {
     </div>
   );
 }
-

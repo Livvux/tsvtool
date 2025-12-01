@@ -4,6 +4,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  FileText, 
+  PenLine, 
+  MapPin, 
+  Link as LinkIcon, 
+  Globe,
+  Check,
+  AlertTriangle,
+  BookOpen
+} from 'lucide-react';
 import type { StepProps } from '../types';
 
 export function DescriptionStep({ formData, onUpdate, errors }: StepProps) {
@@ -15,7 +25,7 @@ export function DescriptionStep({ formData, onUpdate, errors }: StepProps) {
     <div className="space-y-6 animate-in fade-in-50 slide-in-from-right-5 duration-300">
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-          <span className="text-3xl">📝</span>
+          <FileText className="w-8 h-8 text-primary" />
         </div>
         <h2 className="text-2xl font-semibold text-foreground">
           Beschreibung & Standort
@@ -29,7 +39,7 @@ export function DescriptionStep({ formData, onUpdate, errors }: StepProps) {
       <Card className="border-2 border-dashed border-primary/20">
         <CardHeader className="pb-4">
           <CardTitle className="text-lg flex items-center gap-2">
-            <span>✍️</span>
+            <PenLine className="w-5 h-5 text-primary" />
             <span>Кратко описание / Kurzbeschreibung</span>
           </CardTitle>
         </CardHeader>
@@ -49,15 +59,17 @@ export function DescriptionStep({ formData, onUpdate, errors }: StepProps) {
             
             {/* Character counter */}
             <div className="flex items-center justify-between">
-              <p className={`text-sm ${isDescriptionValid ? 'text-muted-foreground' : 'text-amber-600 dark:text-amber-400'}`}>
+              <p className={`text-sm flex items-center gap-1.5 ${isDescriptionValid ? 'text-muted-foreground' : 'text-amber-600 dark:text-amber-400'}`}>
                 {isDescriptionValid ? (
-                  <span className="flex items-center gap-1">
-                    ✅ Минимална дължина достигната
-                  </span>
+                  <>
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span>Минимална дължина достигната</span>
+                  </>
                 ) : (
-                  <span className="flex items-center gap-1">
-                    ⚠️ Минимум {minLength} символа ({minLength - descriptionLength} още)
-                  </span>
+                  <>
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>Минимум {minLength} символа ({minLength - descriptionLength} още)</span>
+                  </>
                 )}
               </p>
               <span className={`text-sm font-mono ${isDescriptionValid ? 'text-muted-foreground' : 'text-amber-600'}`}>
@@ -73,7 +85,7 @@ export function DescriptionStep({ formData, onUpdate, errors }: StepProps) {
           {/* Translation info */}
           <div className="mt-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900">
             <p className="text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
-              <span>🌐</span>
+              <Globe className="w-4 h-4" />
               <span>Текстът ще бъде автоматично преведен на немски / Der Text wird automatisch ins Deutsche übersetzt</span>
             </p>
           </div>
@@ -84,13 +96,13 @@ export function DescriptionStep({ formData, onUpdate, errors }: StepProps) {
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg flex items-center gap-2">
-            <span>📍</span>
+            <MapPin className="w-5 h-5 text-primary" />
             <span>Местоположение / Standort</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="location" className="text-base">
                 Местоположение / Aufenthaltsort <span className="text-destructive">*</span>
               </Label>
@@ -106,7 +118,7 @@ export function DescriptionStep({ formData, onUpdate, errors }: StepProps) {
               )}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="seekingHomeSince" className="text-base">
                 Търси дом от / Sucht Zuhause seit
               </Label>
@@ -126,7 +138,7 @@ export function DescriptionStep({ formData, onUpdate, errors }: StepProps) {
           {/* Web Link */}
           <div className="space-y-2 pt-4 border-t border-border">
             <Label htmlFor="webLink" className="text-base flex items-center gap-2">
-              <span>🔗</span>
+              <LinkIcon className="w-4 h-4 text-muted-foreground" />
               <span>Уеб линк / Web Link</span>
             </Label>
             <Input
@@ -145,19 +157,27 @@ export function DescriptionStep({ formData, onUpdate, errors }: StepProps) {
 
       {/* Writing tips */}
       <div className="flex items-start gap-3 p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900">
-        <span className="text-xl">📖</span>
+        <BookOpen className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5" />
         <div>
           <p className="text-sm font-medium text-green-900 dark:text-green-100">
             Съвети за описанието / Tipps für die Beschreibung
           </p>
           <ul className="text-sm text-green-700 dark:text-green-300 mt-2 space-y-1">
-            <li>• Опишете какво прави животното специално</li>
-            <li>• Споменете любими дейности или играчки</li>
-            <li>• Beschreiben Sie, was das Tier besonders macht</li>
+            <li className="flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-green-600" />
+              Опишете какво прави животното специално
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-green-600" />
+              Споменете любими дейности или играчки
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-green-600" />
+              Beschreiben Sie, was das Tier besonders macht
+            </li>
           </ul>
         </div>
       </div>
     </div>
   );
 }
-

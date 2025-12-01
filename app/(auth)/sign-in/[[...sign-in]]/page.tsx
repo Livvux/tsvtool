@@ -1,11 +1,15 @@
 'use client';
 
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import { PawLoader } from '@/components/layout/PawLoader';
+
+// Mark as dynamic to prevent static generation
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // CACHE COMPONENTS FIX: Clerk SignIn accesses cookies during SSR/prerender
 // Dynamic import with ssr: false prevents server-side rendering of this component
-const SignIn = dynamic(
+const SignIn = nextDynamic(
   () => import('@clerk/nextjs').then((mod) => mod.SignIn),
   { 
     ssr: false,

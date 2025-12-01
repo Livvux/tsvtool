@@ -3,6 +3,18 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  Camera, 
+  Image as ImageIcon, 
+  Video, 
+  Link as LinkIcon, 
+  Upload,
+  Check,
+  X,
+  AlertTriangle,
+  Lightbulb,
+  Loader2
+} from 'lucide-react';
 import type { MediaStepProps } from '../types';
 
 export function MediaStep({
@@ -21,7 +33,7 @@ export function MediaStep({
     <div className="space-y-6 animate-in fade-in-50 slide-in-from-right-5 duration-300">
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-          <span className="text-3xl">📷</span>
+          <Camera className="w-8 h-8 text-primary" />
         </div>
         <h2 className="text-2xl font-semibold text-foreground">
           Medien hochladen
@@ -36,7 +48,7 @@ export function MediaStep({
         <CardHeader className="pb-4">
           <CardTitle className="text-lg flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <span>📷</span>
+              <ImageIcon className="w-5 h-5 text-primary" />
               <span>Снимки / Bilder</span>
               <span className="text-destructive">*</span>
             </span>
@@ -62,12 +74,12 @@ export function MediaStep({
             >
               {uploadingImages ? (
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+                  <Loader2 className="w-10 h-10 text-primary animate-spin" />
                   <span className="text-sm text-primary">Качване... / Lädt hoch...</span>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <span className="text-4xl">📸</span>
+                  <Upload className="w-10 h-10" />
                   <span className="text-sm font-medium">Кликнете или плъзнете снимки тук</span>
                   <span className="text-xs">Klicken oder Bilder hierher ziehen</span>
                   <span className="text-xs text-muted-foreground/60">JPEG, PNG, WebP, GIF</span>
@@ -89,7 +101,7 @@ export function MediaStep({
           {uploadedImages.length > 0 && (
             <div className="space-y-3">
               <p className="text-sm font-medium text-green-600 dark:text-green-400 flex items-center gap-2">
-                <span>✅</span>
+                <Check className="w-4 h-4" />
                 <span>{uploadedImages.length} снимки качени / Bilder hochgeladen</span>
               </p>
               <div className="flex flex-wrap gap-2">
@@ -98,13 +110,14 @@ export function MediaStep({
                     key={index}
                     className="group flex items-center gap-2 bg-primary/5 hover:bg-primary/10 px-4 py-2 rounded-full text-sm transition-colors"
                   >
-                    <span>🖼️ Bild {index + 1}</span>
+                    <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                    <span>Bild {index + 1}</span>
                     <button
                       type="button"
                       onClick={() => onRemoveImage(index)}
                       className="w-5 h-5 flex items-center justify-center rounded-full bg-destructive/10 text-destructive hover:bg-destructive hover:text-white transition-colors"
                     >
-                      ×
+                      <X className="w-3 h-3" />
                     </button>
                   </div>
                 ))}
@@ -114,7 +127,7 @@ export function MediaStep({
 
           {uploadedImages.length === 0 && (
             <p className="text-sm text-amber-600 dark:text-amber-400 flex items-center gap-2">
-              <span>⚠️</span>
+              <AlertTriangle className="w-4 h-4" />
               <span>Поне една снимка е задължителна / Mindestens ein Bild erforderlich</span>
             </p>
           )}
@@ -126,7 +139,7 @@ export function MediaStep({
         <CardHeader className="pb-4">
           <CardTitle className="text-lg flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <span>🎬</span>
+              <Video className="w-5 h-5 text-blue-600" />
               <span>Видеа / Videos</span>
               <span className="text-xs font-normal text-muted-foreground">(optional)</span>
             </span>
@@ -152,12 +165,12 @@ export function MediaStep({
             >
               {uploadingVideos ? (
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-10 h-10 border-4 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+                  <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
                   <span className="text-sm text-blue-600">Video wird hochgeladen...</span>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <span className="text-3xl">🎥</span>
+                  <Video className="w-8 h-8" />
                   <span className="text-sm">Кликнете за видео / Klicken für Video</span>
                   <span className="text-xs text-muted-foreground/60">MP4, WebM, MOV, AVI</span>
                 </div>
@@ -178,7 +191,7 @@ export function MediaStep({
           {uploadedVideos.length > 0 && (
             <div className="space-y-3">
               <p className="text-sm font-medium text-green-600 dark:text-green-400 flex items-center gap-2">
-                <span>✅</span>
+                <Check className="w-4 h-4" />
                 <span>{uploadedVideos.length} видеа качени / Videos hochgeladen</span>
               </p>
               <div className="flex flex-wrap gap-2">
@@ -187,13 +200,14 @@ export function MediaStep({
                     key={index}
                     className="group flex items-center gap-2 bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-900/30 px-4 py-2 rounded-full text-sm transition-colors"
                   >
-                    <span>🎬 Video {index + 1}</span>
+                    <Video className="w-4 h-4 text-blue-600" />
+                    <span>Video {index + 1}</span>
                     <button
                       type="button"
                       onClick={() => onRemoveVideo(index)}
                       className="w-5 h-5 flex items-center justify-center rounded-full bg-destructive/10 text-destructive hover:bg-destructive hover:text-white transition-colors"
                     >
-                      ×
+                      <X className="w-3 h-3" />
                     </button>
                   </div>
                 ))}
@@ -207,7 +221,7 @@ export function MediaStep({
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg flex items-center gap-2">
-            <span>🔗</span>
+            <LinkIcon className="w-5 h-5 text-primary" />
             <span>Външен видео линк / Externer Video-Link</span>
           </CardTitle>
         </CardHeader>
@@ -232,19 +246,27 @@ export function MediaStep({
 
       {/* Tips */}
       <div className="flex items-start gap-3 p-4 rounded-lg bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900">
-        <span className="text-xl">💡</span>
+        <Lightbulb className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5" />
         <div>
           <p className="text-sm font-medium text-purple-900 dark:text-purple-100">
             Съвети за медии / Medien-Tipps
           </p>
           <ul className="text-sm text-purple-700 dark:text-purple-300 mt-2 space-y-1">
-            <li>• Качете ясни снимки от различни ъгли</li>
-            <li>• Laden Sie klare Fotos aus verschiedenen Winkeln hoch</li>
-            <li>• Videos zeigen das Verhalten besser als Fotos</li>
+            <li className="flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-purple-600" />
+              Качете ясни снимки от различни ъгли
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-purple-600" />
+              Laden Sie klare Fotos aus verschiedenen Winkeln hoch
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-purple-600" />
+              Videos zeigen das Verhalten besser als Fotos
+            </li>
           </ul>
         </div>
       </div>
     </div>
   );
 }
-

@@ -1,11 +1,20 @@
 import type { AnimalFormData } from '@/types/animal';
+import type { LucideIcon } from 'lucide-react';
+import { 
+  PawPrint, 
+  Stethoscope, 
+  Heart, 
+  FileText, 
+  Camera, 
+  CheckCircle2 
+} from 'lucide-react';
 
 export interface WizardStep {
   id: number;
   title: string;
   titleBG: string;
   description: string;
-  icon: string;
+  icon: LucideIcon;
 }
 
 export interface StepProps {
@@ -36,42 +45,41 @@ export const WIZARD_STEPS: WizardStep[] = [
     title: 'Grundinfo',
     titleBG: 'Основна информация',
     description: 'Name, Art, Geschlecht',
-    icon: '🐾',
+    icon: PawPrint,
   },
   {
     id: 2,
     title: 'Medizin',
     titleBG: 'Медицина',
     description: 'Gesundheit & Impfungen',
-    icon: '💉',
+    icon: Stethoscope,
   },
   {
     id: 3,
     title: 'Verhalten',
     titleBG: 'Поведение',
     description: 'Charakter & Verträglichkeit',
-    icon: '🧡',
+    icon: Heart,
   },
   {
     id: 4,
     title: 'Beschreibung',
     titleBG: 'Описание',
     description: 'Text & Standort',
-    icon: '📝',
+    icon: FileText,
   },
   {
     id: 5,
     title: 'Medien',
     titleBG: 'Медии',
     description: 'Fotos & Videos',
-    icon: '📷',
+    icon: Camera,
   },
   {
     id: 6,
     title: 'Prüfen',
     titleBG: 'Преглед',
     description: 'Zusammenfassung',
-    icon: '✅',
+    icon: CheckCircle2,
   },
 ];
-

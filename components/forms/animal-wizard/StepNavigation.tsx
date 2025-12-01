@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ChevronLeft, ChevronRight, Check, Loader2 } from 'lucide-react';
 import { WIZARD_STEPS } from './types';
 
 interface StepNavigationProps {
@@ -37,9 +38,7 @@ export function StepNavigation({
           disabled={isSubmitting}
           className="min-w-[140px] gap-2"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+          <ChevronLeft className="w-4 h-4" />
           <span>Назад / Zurück</span>
         </Button>
       )}
@@ -53,18 +52,13 @@ export function StepNavigation({
         >
           {isSubmitting ? (
             <>
-              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
+              <Loader2 className="w-4 h-4 animate-spin" />
               <span>Изпращане...</span>
             </>
           ) : (
             <>
               <span>Създаване / Erstellen</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+              <Check className="w-4 h-4" />
             </>
           )}
         </Button>
@@ -76,12 +70,9 @@ export function StepNavigation({
           className="min-w-[140px] gap-2"
         >
           <span>Напред / Weiter</span>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          <ChevronRight className="w-4 h-4" />
         </Button>
       )}
     </div>
   );
 }
-

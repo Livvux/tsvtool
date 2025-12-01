@@ -5,6 +5,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  Stethoscope, 
+  Hospital, 
+  ClipboardList, 
+  Info,
+  Check,
+  X,
+  RefreshCw,
+  HeartPulse,
+  Bandage
+} from 'lucide-react';
 import type { StepProps } from '../types';
 import type { YesNo, YesNoPartial, ChipStatus } from '@/types/animal';
 
@@ -13,7 +24,7 @@ export function MedicalInfoStep({ formData, onUpdate }: StepProps) {
     <div className="space-y-6 animate-in fade-in-50 slide-in-from-right-5 duration-300">
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-          <span className="text-3xl">💉</span>
+          <Stethoscope className="w-8 h-8 text-primary" />
         </div>
         <h2 className="text-2xl font-semibold text-foreground">
           Medizinische Information
@@ -27,13 +38,13 @@ export function MedicalInfoStep({ formData, onUpdate }: StepProps) {
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg flex items-center gap-2">
-            <span>🏥</span>
+            <Hospital className="w-5 h-5 text-primary" />
             <span>Основен статус / Grundstatus</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="castrated" className="text-base">
                 Кастриран / Kastriert <span className="text-destructive">*</span>
               </Label>
@@ -47,19 +58,21 @@ export function MedicalInfoStep({ formData, onUpdate }: StepProps) {
                 <SelectContent>
                   <SelectItem value="JA">
                     <span className="flex items-center gap-2">
-                      ✅ <span>Да / JA</span>
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span>Да / JA</span>
                     </span>
                   </SelectItem>
                   <SelectItem value="NEIN">
                     <span className="flex items-center gap-2">
-                      ❌ <span>Не / NEIN</span>
+                      <X className="w-4 h-4 text-red-500" />
+                      <span>Не / NEIN</span>
                     </span>
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="vaccinated" className="text-base">
                 Ваксиниран / Geimpft <span className="text-destructive">*</span>
               </Label>
@@ -73,24 +86,27 @@ export function MedicalInfoStep({ formData, onUpdate }: StepProps) {
                 <SelectContent>
                   <SelectItem value="JA">
                     <span className="flex items-center gap-2">
-                      ✅ <span>Да / JA</span>
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span>Да / JA</span>
                     </span>
                   </SelectItem>
                   <SelectItem value="NEIN">
                     <span className="flex items-center gap-2">
-                      ❌ <span>Не / NEIN</span>
+                      <X className="w-4 h-4 text-red-500" />
+                      <span>Не / NEIN</span>
                     </span>
                   </SelectItem>
                   <SelectItem value="teilweise">
                     <span className="flex items-center gap-2">
-                      🔄 <span>Частично / Teilweise</span>
+                      <RefreshCw className="w-4 h-4 text-amber-500" />
+                      <span>Частично / Teilweise</span>
                     </span>
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="chipped" className="text-base">
                 Чипиран / Gechipt <span className="text-destructive">*</span>
               </Label>
@@ -104,17 +120,20 @@ export function MedicalInfoStep({ formData, onUpdate }: StepProps) {
                 <SelectContent>
                   <SelectItem value="vollständig">
                     <span className="flex items-center gap-2">
-                      ✅ <span>Да / Vollständig</span>
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span>Да / Vollständig</span>
                     </span>
                   </SelectItem>
                   <SelectItem value="teilweise">
                     <span className="flex items-center gap-2">
-                      🔄 <span>Частично / Teilweise</span>
+                      <RefreshCw className="w-4 h-4 text-amber-500" />
+                      <span>Частично / Teilweise</span>
                     </span>
                   </SelectItem>
                   <SelectItem value="nein">
                     <span className="flex items-center gap-2">
-                      ❌ <span>Не / Nein</span>
+                      <X className="w-4 h-4 text-red-500" />
+                      <span>Не / Nein</span>
                     </span>
                   </SelectItem>
                 </SelectContent>
@@ -122,8 +141,8 @@ export function MedicalInfoStep({ formData, onUpdate }: StepProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="health" className="text-base">
                 Здраве / Gesundheit <span className="text-destructive">*</span>
               </Label>
@@ -137,19 +156,21 @@ export function MedicalInfoStep({ formData, onUpdate }: StepProps) {
                 <SelectContent>
                   <SelectItem value="JA">
                     <span className="flex items-center gap-2">
-                      💚 <span>Здрав / Gesund</span>
+                      <HeartPulse className="w-4 h-4 text-green-600" />
+                      <span>Здрав / Gesund</span>
                     </span>
                   </SelectItem>
                   <SelectItem value="NEIN">
                     <span className="flex items-center gap-2">
-                      🩹 <span>Проблеми / Probleme</span>
+                      <Bandage className="w-4 h-4 text-amber-500" />
+                      <span>Проблеми / Probleme</span>
                     </span>
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col h-full">
               <Label htmlFor="bloodType" className="text-base">
                 Кръвна група / Blutgruppe
               </Label>
@@ -168,7 +189,7 @@ export function MedicalInfoStep({ formData, onUpdate }: StepProps) {
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg flex items-center gap-2">
-            <span>📋</span>
+            <ClipboardList className="w-5 h-5 text-primary" />
             <span>Подробности / Details</span>
           </CardTitle>
         </CardHeader>
@@ -222,7 +243,7 @@ export function MedicalInfoStep({ formData, onUpdate }: StepProps) {
 
       {/* Info box */}
       <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900">
-        <span className="text-xl">ℹ️</span>
+        <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
         <div>
           <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
             Важно / Wichtig
@@ -236,4 +257,3 @@ export function MedicalInfoStep({ formData, onUpdate }: StepProps) {
     </div>
   );
 }
-
