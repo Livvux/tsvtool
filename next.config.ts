@@ -1,5 +1,18 @@
 import type { NextConfig } from 'next';
 
+// Conditionally enable bundle analyzer (only if package is installed and ANALYZE=true)
+let withBundleAnalyzer = (config: NextConfig) => config;
+if (process.env.ANALYZE === 'true') {
+  try {
+    withBundleAnalyzer = require('@next/bundle-analyzer')({
+      enabled: true,
+    });
+  } catch (error) {
+    // Bundle analyzer not installed, skip it
+    console.warn('@next/bundle-analyzer not found. Install it with: pnpm add -D @next/bundle-analyzer');
+  }
+}
+
 const nextConfig: NextConfig = {
   // Optimize for Next.js 16
   reactStrictMode: true,
@@ -11,12 +24,19 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-label',
       '@radix-ui/react-select',
       '@radix-ui/react-slot',
+      '@radix-ui/react-popover',
       'convex/react',
       '@clerk/nextjs',
+      'date-fns',
+      'lucide-react',
     ],
     turbopackFileSystemCacheForDev: true,
     // Optimize CSS for production
     optimizeCss: true,
+    // Enable server actions optimization
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
   },
   
   // Enable partial prerendering for better performance
@@ -52,6 +72,9 @@ const nextConfig: NextConfig = {
   // Compress responses
   compress: true,
 
+  // Output configuration for optimized Vercel builds
+  output: 'standalone',
+
   // Headers for better caching
   async headers() {
     return [
@@ -74,6 +97,11 @@ const nextConfig: NextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
+          // Vercel-specific: Enable HSTS
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains',
+          },
         ],
       },
       {
@@ -94,9 +122,27 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Vercel-specific: Cache API routes that don't change often
+      {
+        source: '/api/convex/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'private, no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'CDN-Cache-Control',
+            value: 'no-store',
+          },
+          {
+            key: 'Vercel-CDN-Cache-Control',
+            value: 'no-store',
+          },
+        ],
+      },
     ];
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);
 
