@@ -72,7 +72,8 @@ const schema = defineSchema({
     // Clerk ID (tokenIdentifier)
     tokenIdentifier: v.string(),
     // Approval status - new users must be approved by admin
-    isApproved: v.boolean(),
+    // Optional for backward compatibility with existing users (they are auto-approved)
+    isApproved: v.optional(v.boolean()),
     approvedBy: v.optional(v.id('users')),
     approvedAt: v.optional(v.number()),
   })

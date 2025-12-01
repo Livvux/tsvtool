@@ -19,6 +19,8 @@ export const getCurrent = query({
       .withIndex('tokenIdentifier', (q) => q.eq('tokenIdentifier', identity.tokenIdentifier))
       .first();
 
+    // Backward compatibility: Return user with isApproved defaulting to true if undefined
+    // The frontend will handle undefined as approved
     return user;
   },
 });
@@ -44,8 +46,17 @@ export const store = mutation({
 
     if (user !== null) {
       // If we've seen this identity before but the name/email has changed, patch the value.
+      const updates: { name?: string; email?: string; isApproved?: boolean } = {};
       if (user.name !== identity.name || user.email !== identity.email) {
-        await ctx.db.patch(user._id, { name: identity.name, email: identity.email! });
+        updates.name = identity.name;
+        updates.email = identity.email!;
+      }
+      // Backward compatibility: Auto-approve existing users without isApproved field
+      if (user.isApproved === undefined) {
+        updates.isApproved = true;
+      }
+      if (Object.keys(updates).length > 0) {
+        await ctx.db.patch(user._id, updates);
       }
       return user._id;
     }
@@ -111,10 +122,10 @@ export const listPending = query({
       throw new Error('ACCESS_DENIED:Only admins can list pending users');
     }
 
-    return await ctx.db
-      .query('users')
-      .withIndex('isApproved', (q) => q.eq('isApproved', false))
-      .collect();
+    // Get all users and filter for pending (isApproved === false)
+    // Note: Users with isApproved === undefined are treated as approved (backward compatibility)
+    const allUsers = await ctx.db.query('users').collect();
+    return allUsers.filter(u => u.isApproved === false);
   },
 });
 

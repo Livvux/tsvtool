@@ -141,7 +141,8 @@ export default function UsersPage() {
   }
 
   // Filter out pending users from the main list
-  const approvedUsers = users.filter(u => u.isApproved);
+  // Note: undefined isApproved is treated as approved (backward compatibility)
+  const approvedUsers = users.filter(u => u.isApproved !== false);
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {

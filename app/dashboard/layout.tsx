@@ -278,8 +278,9 @@ export default function DashboardLayout({
   }, [isLoaded, isSignedIn, router]);
 
   // Redirect to pending-approval page if user is not approved
+  // Note: undefined isApproved is treated as approved (backward compatibility)
   useEffect(() => {
-    if (user && !user.isApproved) {
+    if (user && user.isApproved === false) {
       router.push('/dashboard/pending-approval');
     }
   }, [user, router]);
@@ -289,7 +290,8 @@ export default function DashboardLayout({
   }
 
   // Show loading while redirecting unapproved users
-  if (!user.isApproved) {
+  // Note: undefined isApproved is treated as approved (backward compatibility)
+  if (user.isApproved === false) {
     return <PawLoader text="Weiterleitung..." />;
   }
 
