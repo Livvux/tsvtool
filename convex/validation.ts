@@ -119,6 +119,11 @@ export const validateAnimalDraft = internalAction({
         status: 'AKZEPTIERT',
       });
 
+      // Trigger translation after status change to AKZEPTIERT
+      await ctx.scheduler.runAfter(0, internal.translation.translateAnimalProfile, {
+        animalId: args.animalId,
+      });
+
       // Log audit entry for successful validation
       await ctx.runMutation(internal.auditLog.createInternal, {
         action: 'VALIDATION_SUCCESS',

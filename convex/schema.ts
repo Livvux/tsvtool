@@ -119,6 +119,7 @@ const schema = defineSchema({
     
     // Behavior
     characteristics: v.string(),
+    characteristicsBG: v.optional(v.string()),
     compatibleDogs: v.union(
       v.literal('JA'),
       v.literal('NEIN'),

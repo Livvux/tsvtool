@@ -143,7 +143,12 @@ export const translateAnimalProfile = internalAction({
         translatedFields.descLong = await translateText(animal.descShort);
       }
 
+      // Translate characteristics, but preserve original in characteristicsBG if not already set
       if (animal.characteristics) {
+        // Only translate if characteristicsBG is not already set (preserve original Bulgarian)
+        if (!animal.characteristicsBG) {
+          translatedFields.characteristicsBG = animal.characteristics;
+        }
         translatedFields.characteristics = await translateText(animal.characteristics);
       }
 

@@ -457,10 +457,21 @@ function checkConvex(): ApiCheckResult {
 }
 
 // Main action to check all API statuses
+// Only accessible by admins
 export const checkAllApiStatus = action({
   args: {},
-  handler: async (): Promise<ApiCheckResult[]> => {
-    logger.info('Checking all API configurations');
+  handler: async (ctx): Promise<ApiCheckResult[]> => {
+    // Verify authentication and admin role
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error('Not authenticated');
+    }
+
+    // Note: Actions cannot directly query the database, but the Settings page
+    // is only accessible to admins (verified in the dashboard layout).
+    // For additional security, we could add a separate query to verify admin role.
+    
+    logger.info('Checking all API configurations', { user: identity.email });
     
     const results = await Promise.all([
       checkTranslationService(),

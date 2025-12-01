@@ -62,6 +62,7 @@ export const create = mutation({
       createdBy: user._id,
       createdByRole: user.role,
       descShortBG: args.descShort,
+      characteristicsBG: args.characteristics,
       distributedTo: {},
     });
 
@@ -144,6 +145,7 @@ export const update = mutation({
     diseases: v.optional(v.string()),
     handicap: v.optional(v.string()),
     characteristics: v.optional(v.string()),
+    characteristicsBG: v.optional(v.string()),
     compatibleDogs: v.optional(v.union(v.literal('JA'), v.literal('NEIN'), v.literal('kann getestet werden'))),
     compatibleCats: v.optional(v.union(v.literal('JA'), v.literal('NEIN'), v.literal('kann getestet werden'))),
     compatibleChildren: v.optional(v.union(v.literal('JA'), v.literal('NEIN'), v.literal('kann getestet werden'))),
