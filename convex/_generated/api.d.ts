@@ -16,6 +16,7 @@ import type * as distributionHelpers from "../distributionHelpers.js";
 import type * as http from "../http.js";
 import type * as matchpfote from "../matchpfote.js";
 import type * as r2 from "../r2.js";
+import type * as rateLimit from "../rateLimit.js";
 import type * as storage from "../storage.js";
 import type * as translation from "../translation.js";
 import type * as users from "../users.js";
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   matchpfote: typeof matchpfote;
   r2: typeof r2;
+  rateLimit: typeof rateLimit;
   storage: typeof storage;
   translation: typeof translation;
   users: typeof users;
