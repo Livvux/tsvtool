@@ -39,7 +39,8 @@ next-env.d.ts
 
 # convex
 .convex
-convex/_generated
+# Note: convex/_generated is committed for CI/CD builds
+# convex/_generated
 
 # IDE
 .cursor/
