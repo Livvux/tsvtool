@@ -65,12 +65,17 @@ export const store = mutation({
       await ctx.db.patch(pendingInvitation._id, { used: true, usedAt: Date.now() });
     }
 
+    // Determine if user should be auto-approved
+    // Users from invitations are auto-approved, others need admin approval
+    const isApproved = !!pendingInvitation;
+
     // If it's a new identity, create a new `User`.
     const newUserId = await ctx.db.insert('users', {
       name: identity.name,
       email: identity.email!,
       tokenIdentifier: identity.tokenIdentifier,
       role: role,
+      isApproved: isApproved,
     });
 
     // Log audit entry for new user creation
@@ -82,10 +87,152 @@ export const store = mutation({
       targetType: 'user',
       targetId: newUserId,
       targetName: identity.name ?? identity.email!,
-      details: JSON.stringify({ role, fromInvitation: !!pendingInvitation }),
+      details: JSON.stringify({ role, fromInvitation: !!pendingInvitation, isApproved }),
     });
 
     return newUserId;
+  },
+});
+
+/**
+ * Get pending (unapproved) users. Only accessible by admins.
+ */
+export const listPending = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Not authenticated');
+
+    const currentUser = await ctx.db
+      .query('users')
+      .withIndex('tokenIdentifier', (q) => q.eq('tokenIdentifier', identity.tokenIdentifier))
+      .first();
+
+    if (!currentUser || currentUser.role !== 'admin') {
+      throw new Error('ACCESS_DENIED:Only admins can list pending users');
+    }
+
+    return await ctx.db
+      .query('users')
+      .withIndex('isApproved', (q) => q.eq('isApproved', false))
+      .collect();
+  },
+});
+
+/**
+ * Approve a user. Only accessible by admins.
+ */
+export const approve = mutation({
+  args: {
+    userId: v.id('users'),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Not authenticated');
+
+    const currentUser = await ctx.db
+      .query('users')
+      .withIndex('tokenIdentifier', (q) => q.eq('tokenIdentifier', identity.tokenIdentifier))
+      .first();
+
+    if (!currentUser || currentUser.role !== 'admin') {
+      await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+        action: 'ACCESS_DENIED' as AuditAction,
+        userId: currentUser?._id,
+        userName: currentUser?.name,
+        userEmail: currentUser?.email ?? identity.email,
+        targetType: 'user',
+        targetId: args.userId,
+        details: JSON.stringify({ 
+          attemptedAction: 'USER_APPROVE',
+          userRole: currentUser?.role ?? 'unknown'
+        }),
+      });
+      throw new Error('Only admins can approve users');
+    }
+
+    const targetUser = await ctx.db.get(args.userId);
+    if (!targetUser) {
+      throw new Error('User not found');
+    }
+
+    if (targetUser.isApproved) {
+      throw new Error('User is already approved');
+    }
+
+    await ctx.db.patch(args.userId, {
+      isApproved: true,
+      approvedBy: currentUser._id,
+      approvedAt: Date.now(),
+    });
+
+    // Log audit entry
+    await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+      action: 'USER_APPROVE' as AuditAction,
+      userId: currentUser._id,
+      userName: currentUser.name,
+      userEmail: currentUser.email,
+      targetType: 'user',
+      targetId: args.userId,
+      targetName: targetUser.name ?? targetUser.email,
+    });
+
+    return args.userId;
+  },
+});
+
+/**
+ * Reject (delete) a pending user. Only accessible by admins.
+ */
+export const reject = mutation({
+  args: {
+    userId: v.id('users'),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Not authenticated');
+
+    const currentUser = await ctx.db
+      .query('users')
+      .withIndex('tokenIdentifier', (q) => q.eq('tokenIdentifier', identity.tokenIdentifier))
+      .first();
+
+    if (!currentUser || currentUser.role !== 'admin') {
+      await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+        action: 'ACCESS_DENIED' as AuditAction,
+        userId: currentUser?._id,
+        userName: currentUser?.name,
+        userEmail: currentUser?.email ?? identity.email,
+        targetType: 'user',
+        targetId: args.userId,
+        details: JSON.stringify({ 
+          attemptedAction: 'USER_REJECT',
+          userRole: currentUser?.role ?? 'unknown'
+        }),
+      });
+      throw new Error('Only admins can reject users');
+    }
+
+    const targetUser = await ctx.db.get(args.userId);
+    if (!targetUser) {
+      throw new Error('User not found');
+    }
+
+    if (targetUser.isApproved) {
+      throw new Error('Cannot reject an already approved user. Use delete instead.');
+    }
+
+    await ctx.db.delete(args.userId);
+
+    // Log audit entry
+    await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+      action: 'USER_REJECT' as AuditAction,
+      userId: currentUser._id,
+      userName: currentUser.name,
+      userEmail: currentUser.email,
+      targetType: 'user',
+      targetId: args.userId,
+      targetName: targetUser.name ?? targetUser.email,
+    });
   },
 });
 

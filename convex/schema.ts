@@ -13,6 +13,8 @@ export const auditActionValidator = v.union(
   v.literal('USER_UPDATE_ROLE'),
   v.literal('USER_DELETE'),
   v.literal('USER_INVITE'),
+  v.literal('USER_APPROVE'),
+  v.literal('USER_REJECT'),
   // System Actions
   v.literal('VALIDATION_SUCCESS'),
   v.literal('VALIDATION_FAILURE'),
@@ -69,10 +71,15 @@ const schema = defineSchema({
     ),
     // Clerk ID (tokenIdentifier)
     tokenIdentifier: v.string(),
+    // Approval status - new users must be approved by admin
+    isApproved: v.boolean(),
+    approvedBy: v.optional(v.id('users')),
+    approvedAt: v.optional(v.number()),
   })
     .index('email', ['email'])
     .index('role', ['role'])
-    .index('tokenIdentifier', ['tokenIdentifier']),
+    .index('tokenIdentifier', ['tokenIdentifier'])
+    .index('isApproved', ['isApproved']),
 
   // User invitations table - stores pending invitations with roles
   userInvitations: defineTable({
