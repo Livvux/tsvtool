@@ -1,5 +1,7 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
+import { internal } from './_generated/api';
+import type { AuditAction } from './auditLog';
 
 /**
  * Get the current user record, or null if not authenticated or not found.
@@ -63,12 +65,26 @@ export const store = mutation({
     }
 
     // If it's a new identity, create a new `User`.
-    return await ctx.db.insert('users', {
+    const newUserId = await ctx.db.insert('users', {
       name: identity.name,
       email: identity.email!,
       tokenIdentifier: identity.tokenIdentifier,
       role: role,
     });
+
+    // Log audit entry for new user creation
+    await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+      action: 'USER_CREATE' as AuditAction,
+      userId: newUserId,
+      userName: identity.name,
+      userEmail: identity.email!,
+      targetType: 'user',
+      targetId: newUserId,
+      targetName: identity.name ?? identity.email!,
+      details: JSON.stringify({ role, fromInvitation: !!pendingInvitation }),
+    });
+
+    return newUserId;
   },
 });
 
@@ -118,7 +134,25 @@ export const updateRole = mutation({
       throw new Error('Only admins can update user roles');
     }
 
+    // Get target user for audit log
+    const targetUser = await ctx.db.get(args.userId);
+    const previousRole = targetUser?.role;
+
     await ctx.db.patch(args.userId, { role: args.role });
+
+    // Log audit entry
+    await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+      action: 'USER_UPDATE_ROLE' as AuditAction,
+      userId: currentUser._id,
+      userName: currentUser.name,
+      userEmail: currentUser.email,
+      targetType: 'user',
+      targetId: args.userId,
+      targetName: targetUser?.name ?? targetUser?.email ?? 'Unbekannt',
+      previousValue: previousRole,
+      newValue: args.role,
+    });
+
     return args.userId;
   },
 });
@@ -145,7 +179,22 @@ export const remove = mutation({
       throw new Error('Cannot delete yourself');
     }
 
+    // Get target user data before deletion for audit log
+    const targetUser = await ctx.db.get(args.userId);
+
     await ctx.db.delete(args.userId);
+
+    // Log audit entry
+    await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+      action: 'USER_DELETE' as AuditAction,
+      userId: currentUser._id,
+      userName: currentUser.name,
+      userEmail: currentUser.email,
+      targetType: 'user',
+      targetId: args.userId,
+      targetName: targetUser?.name ?? targetUser?.email ?? 'Unbekannt',
+      details: JSON.stringify({ deletedUserRole: targetUser?.role }),
+    });
   },
 });
 
@@ -194,7 +243,7 @@ export const storeInvitation = mutation({
     }
 
     // Create new invitation
-    return await ctx.db.insert('userInvitations', {
+    const invitationId = await ctx.db.insert('userInvitations', {
       email: args.email.toLowerCase(),
       role: args.role,
       clerkInvitationId: args.clerkInvitationId,
@@ -202,5 +251,19 @@ export const storeInvitation = mutation({
       createdAt: Date.now(),
       createdBy: args.createdBy,
     });
+
+    // Log audit entry
+    await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+      action: 'USER_INVITE' as AuditAction,
+      userId: currentUser._id,
+      userName: currentUser.name,
+      userEmail: currentUser.email,
+      targetType: 'invitation',
+      targetId: invitationId,
+      targetName: args.email.toLowerCase(),
+      details: JSON.stringify({ role: args.role }),
+    });
+
+    return invitationId;
   },
 });

@@ -357,8 +357,53 @@ export const distributeAnimal = internalAction({
         results,
       });
 
+      // Log audit entry - success or partial success
+      const successCount = Object.values(results).filter(Boolean).length;
+      const failureCount = Object.values(results).filter((v) => !v).length;
+      
+      if (successCount > 0) {
+        await ctx.runMutation(internal.auditLog.createInternal, {
+          action: 'DISTRIBUTION_SUCCESS',
+          targetType: 'animal',
+          targetId: args.animalId,
+          targetName: animal.name,
+          details: JSON.stringify({ 
+            results, 
+            successCount, 
+            failureCount,
+            platforms: Object.entries(results).filter(([, v]) => v).map(([k]) => k)
+          }),
+        });
+      }
+      
+      if (failureCount > 0) {
+        await ctx.runMutation(internal.auditLog.createInternal, {
+          action: 'DISTRIBUTION_FAILURE',
+          targetType: 'animal',
+          targetId: args.animalId,
+          targetName: animal.name,
+          details: JSON.stringify({ 
+            results, 
+            successCount, 
+            failureCount,
+            failedPlatforms: Object.entries(results).filter(([, v]) => !v).map(([k]) => k)
+          }),
+        });
+      }
+
       logger.info('Distribution completed', { animalId: args.animalId, results });
     } catch (error) {
+      // Log audit entry for distribution error
+      await ctx.runMutation(internal.auditLog.createInternal, {
+        action: 'DISTRIBUTION_FAILURE',
+        targetType: 'animal',
+        targetId: args.animalId,
+        targetName: animal.name,
+        details: JSON.stringify({ 
+          error: error instanceof Error ? error.message : String(error) 
+        }),
+      });
+
       logger.error('Distribution error', error instanceof Error ? error : new Error(String(error)), { animalId: args.animalId });
       throw error;
     }

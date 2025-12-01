@@ -2,6 +2,7 @@ import { v } from 'convex/values';
 import { mutation, query, QueryCtx, MutationCtx } from './_generated/server';
 import { internal } from './_generated/api';
 import { Id, Doc } from './_generated/dataModel';
+import type { AuditAction } from './auditLog';
 
 /**
  * Helper function to get the current user from Clerk authentication.
@@ -62,6 +63,18 @@ export const create = mutation({
       createdByRole: user.role,
       descShortBG: args.descShort,
       distributedTo: {},
+    });
+
+    // Log audit entry
+    await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+      action: 'ANIMAL_CREATE' as AuditAction,
+      userId: user._id,
+      userName: user.name,
+      userEmail: user.email,
+      targetType: 'animal',
+      targetId: animalId,
+      targetName: args.name,
+      details: JSON.stringify({ animal: args.animal, breed: args.breed }),
     });
 
     // Trigger automatic validation
@@ -149,7 +162,23 @@ export const update = mutation({
     if (!user) throw new Error('Not authenticated');
 
     const { id, ...updates } = args;
+    
+    // Get current state for audit log
+    const animal = await ctx.db.get(id);
+    
     await ctx.db.patch(id, updates);
+
+    // Log audit entry
+    await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+      action: 'ANIMAL_UPDATE' as AuditAction,
+      userId: user._id,
+      userName: user.name,
+      userEmail: user.email,
+      targetType: 'animal',
+      targetId: id,
+      targetName: animal?.name ?? 'Unbekannt',
+      details: JSON.stringify({ updatedFields: Object.keys(updates) }),
+    });
     
     return id;
   },
@@ -166,7 +195,22 @@ export const remove = mutation({
       throw new Error('Only admins can delete animals');
     }
 
+    // Get animal data before deletion for audit log
+    const animal = await ctx.db.get(args.id);
+
     await ctx.db.delete(args.id);
+
+    // Log audit entry
+    await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+      action: 'ANIMAL_DELETE' as AuditAction,
+      userId: user._id,
+      userName: user.name,
+      userEmail: user.email,
+      targetType: 'animal',
+      targetId: args.id,
+      targetName: animal?.name ?? 'Unbekannt',
+      details: JSON.stringify({ animal: animal?.animal, status: animal?.status }),
+    });
   },
 });
 
@@ -231,6 +275,10 @@ export const updateStatus = mutation({
       throw new Error('Unauthorized: Only managers and admins can update status');
     }
 
+    // Get current state for audit log
+    const animal = await ctx.db.get(args.id);
+    const previousStatus = animal?.status;
+
     const updates: {
       status: typeof args.status;
       reviewedBy?: Id<'users'>;
@@ -263,6 +311,21 @@ export const updateStatus = mutation({
     }
 
     await ctx.db.patch(args.id, updates);
+
+    // Log audit entry
+    await ctx.scheduler.runAfter(0, internal.auditLog.createInternal, {
+      action: 'ANIMAL_STATUS_CHANGE' as AuditAction,
+      userId: user._id,
+      userName: user.name,
+      userEmail: user.email,
+      targetType: 'animal',
+      targetId: args.id,
+      targetName: animal?.name ?? 'Unbekannt',
+      previousValue: previousStatus,
+      newValue: args.status,
+      details: JSON.stringify({ animal: animal?.animal }),
+    });
+
     return args.id;
   },
 });

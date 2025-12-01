@@ -11,7 +11,8 @@ import { PawLoader } from '@/components/layout/PawLoader';
 import { Badge } from '@/components/ui/badge';
 import { 
   PersonIcon, 
-  GearIcon
+  GearIcon,
+  ActivityLogIcon
 } from '@radix-ui/react-icons';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { AnimalSearch } from '@/components/animal/AnimalSearch';
@@ -163,6 +164,15 @@ export default function DashboardLayout({
                     onClick={() => router.push('/dashboard/admin/users')}
                   >
                     <PersonIcon className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant={isActive('/dashboard/admin/logs') ? 'secondary' : 'ghost'} 
+                    size="icon"
+                    className="h-8 w-8"
+                    title="Audit Logs"
+                    onClick={() => router.push('/dashboard/admin/logs')}
+                  >
+                    <ActivityLogIcon className="w-4 h-4" />
                   </Button>
                   <Button 
                     variant={isActive('/dashboard/admin/settings') ? 'secondary' : 'ghost'} 

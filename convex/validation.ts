@@ -118,11 +118,28 @@ export const validateAnimalDraft = internalAction({
         animalId: args.animalId,
         status: 'AKZEPTIERT',
       });
+
+      // Log audit entry for successful validation
+      await ctx.runMutation(internal.auditLog.createInternal, {
+        action: 'VALIDATION_SUCCESS',
+        targetType: 'animal',
+        targetId: args.animalId,
+        targetName: animal.name,
+      });
     } else {
       // Set status to ABGELEHNT with errors
       await ctx.runMutation(internal.validation.updateAnimalStatus, {
         animalId: args.animalId,
         status: 'ABGELEHNT',
+      });
+
+      // Log audit entry for failed validation
+      await ctx.runMutation(internal.auditLog.createInternal, {
+        action: 'VALIDATION_FAILURE',
+        targetType: 'animal',
+        targetId: args.animalId,
+        targetName: animal.name,
+        details: JSON.stringify({ errors: validation.errors }),
       });
 
       // Log validation errors

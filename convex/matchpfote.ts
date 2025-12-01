@@ -166,6 +166,14 @@ export const syncAnimalToMatchpfote = internalAction({
         synced: true,
       });
 
+      // Log audit entry for successful sync
+      await ctx.runMutation(internal.auditLog.createInternal, {
+        action: 'MATCHPFOTE_SYNC_SUCCESS',
+        targetType: 'animal',
+        targetId: args.animalId,
+        targetName: animal.name,
+      });
+
       logger.info('Successfully synced to matchpfote', { animalId: args.animalId, platform: 'matchpfote' });
     } catch (error) {
       logger.error('matchpfote sync failed', error instanceof Error ? error : new Error(String(error)), { animalId: args.animalId, platform: 'matchpfote' });
@@ -173,6 +181,17 @@ export const syncAnimalToMatchpfote = internalAction({
       await ctx.runMutation(internal.matchpfote.updateSyncStatus, {
         animalId: args.animalId,
         synced: false,
+      });
+
+      // Log audit entry for failed sync
+      await ctx.runMutation(internal.auditLog.createInternal, {
+        action: 'MATCHPFOTE_SYNC_FAILURE',
+        targetType: 'animal',
+        targetId: args.animalId,
+        targetName: animal.name,
+        details: JSON.stringify({ 
+          error: error instanceof Error ? error.message : String(error) 
+        }),
       });
       
       throw error;

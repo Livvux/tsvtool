@@ -263,6 +263,29 @@ TSVTool/
 ```
 **Indexes**: `status`, `createdBy`, `createdBy_status`, `status_finalizedAt`
 
+#### `auditLogs`
+```typescript
+{
+  action: AuditAction  // Type of action performed
+  userId?: Id<'users'>  // User who performed the action (null for system)
+  userName?: string  // Cached user name
+  userEmail?: string  // Cached user email
+  targetType: 'animal' | 'user' | 'invitation' | 'system'
+  targetId?: string  // ID of affected entity
+  targetName?: string  // Name/description of affected entity
+  details?: string  // JSON with additional info
+  previousValue?: string  // Previous state (for updates)
+  newValue?: string  // New state (for updates)
+  ipAddress?: string  // IP address if available
+  timestamp: number  // Unix timestamp
+}
+```
+**Indexes**: `action`, `userId`, `targetType`, `timestamp`, `action_timestamp`
+**AuditAction Types**:
+- Animal: `ANIMAL_CREATE`, `ANIMAL_UPDATE`, `ANIMAL_DELETE`, `ANIMAL_STATUS_CHANGE`
+- User: `USER_CREATE`, `USER_UPDATE_ROLE`, `USER_DELETE`, `USER_INVITE`
+- System: `VALIDATION_SUCCESS`, `VALIDATION_FAILURE`, `TRANSLATION_SUCCESS`, `TRANSLATION_FAILURE`, `DISTRIBUTION_SUCCESS`, `DISTRIBUTION_FAILURE`, `MATCHPFOTE_SYNC_SUCCESS`, `MATCHPFOTE_SYNC_FAILURE`
+
 ---
 
 ## Workflow System
@@ -472,6 +495,17 @@ TSVTool/
 - **Role**: `admin` only
 - **Features**: User management and role assignment
 
+#### `/dashboard/admin/logs` (Audit Logs)
+- **File**: `app/dashboard/admin/logs/page.tsx`
+- **Role**: `admin` only
+- **Features**:
+  - View all system audit logs
+  - Filter by action type and target type
+  - Stats dashboard (total actions, success/error counts)
+  - Timestamp-based pagination
+  - Shows user info, target entity, value changes
+  - Detailed JSON context for each log entry
+
 ### Convex Functions
 
 #### Animals (`convex/animals.ts`)
@@ -487,6 +521,14 @@ TSVTool/
 - `getCurrent`: Get current authenticated user
 - `updateRole`: Update user role (admin only)
 - `remove`: Delete user (admin only)
+
+#### Audit Log (`convex/auditLog.ts`)
+- `createInternal`: Internal mutation to create audit log entry (used by other functions)
+- `create`: Mutation to create audit log entry (auto-captures user)
+- `list`: Query audit logs with filtering (admin only)
+- `get`: Get single audit log entry by ID (admin only)
+- `getStats`: Get stats for dashboard (counts by action type, success/error counts)
+- `getByTarget`: Get logs for a specific entity (admin only)
 
 #### Validation (`convex/validation.ts`)
 - `validateAnimalDraft`: Internal action to validate animal

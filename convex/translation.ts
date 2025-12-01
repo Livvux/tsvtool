@@ -169,11 +169,32 @@ export const translateAnimalProfile = internalAction({
         translations: translatedFields,
       });
 
+      // Log audit entry for successful translation
+      await ctx.runMutation(internal.auditLog.createInternal, {
+        action: 'TRANSLATION_SUCCESS',
+        targetType: 'animal',
+        targetId: args.animalId,
+        targetName: animal.name,
+        details: JSON.stringify({ service: config.service, fieldsTranslated: Object.keys(translatedFields) }),
+      });
+
       logger.info(`Translation completed with ${config.service}`, { 
         animalId: args.animalId,
         service: config.service,
       });
     } catch (error) {
+      // Log audit entry for failed translation
+      await ctx.runMutation(internal.auditLog.createInternal, {
+        action: 'TRANSLATION_FAILURE',
+        targetType: 'animal',
+        targetId: args.animalId,
+        targetName: animal.name,
+        details: JSON.stringify({ 
+          service: config.service, 
+          error: error instanceof Error ? error.message : String(error) 
+        }),
+      });
+
       logger.error('Translation failed', error instanceof Error ? error : new Error(String(error)), { 
         animalId: args.animalId,
         service: config.service,

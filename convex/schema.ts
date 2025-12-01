@@ -1,7 +1,56 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
+// Audit Log Action Types
+export const auditActionValidator = v.union(
+  // Animal Actions
+  v.literal('ANIMAL_CREATE'),
+  v.literal('ANIMAL_UPDATE'),
+  v.literal('ANIMAL_DELETE'),
+  v.literal('ANIMAL_STATUS_CHANGE'),
+  // User Actions
+  v.literal('USER_CREATE'),
+  v.literal('USER_UPDATE_ROLE'),
+  v.literal('USER_DELETE'),
+  v.literal('USER_INVITE'),
+  // System Actions
+  v.literal('VALIDATION_SUCCESS'),
+  v.literal('VALIDATION_FAILURE'),
+  v.literal('TRANSLATION_SUCCESS'),
+  v.literal('TRANSLATION_FAILURE'),
+  v.literal('DISTRIBUTION_SUCCESS'),
+  v.literal('DISTRIBUTION_FAILURE'),
+  v.literal('MATCHPFOTE_SYNC_SUCCESS'),
+  v.literal('MATCHPFOTE_SYNC_FAILURE')
+);
+
 const schema = defineSchema({
+  // Audit Logs table for tracking all system actions
+  auditLogs: defineTable({
+    action: auditActionValidator,
+    userId: v.optional(v.id('users')), // User who performed the action (null for system actions)
+    userName: v.optional(v.string()), // Cached user name for display
+    userEmail: v.optional(v.string()), // Cached user email for display
+    targetType: v.union(
+      v.literal('animal'),
+      v.literal('user'),
+      v.literal('invitation'),
+      v.literal('system')
+    ),
+    targetId: v.optional(v.string()), // ID of the affected entity
+    targetName: v.optional(v.string()), // Name/description of the affected entity
+    details: v.optional(v.string()), // JSON string with additional details
+    previousValue: v.optional(v.string()), // Previous state (for updates)
+    newValue: v.optional(v.string()), // New state (for updates)
+    ipAddress: v.optional(v.string()), // IP address if available
+    timestamp: v.number(), // Unix timestamp
+  })
+    .index('action', ['action'])
+    .index('userId', ['userId'])
+    .index('targetType', ['targetType'])
+    .index('timestamp', ['timestamp'])
+    .index('action_timestamp', ['action', 'timestamp']),
+
   // Users table with roles
   users: defineTable({
     name: v.optional(v.string()),
