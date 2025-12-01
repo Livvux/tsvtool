@@ -139,11 +139,11 @@ export function AnimalWizard() {
 
     const validFiles = Array.from(files).filter((file) => {
       if (!isAllowedImageType(file.type)) {
-        setGlobalError(`Ungültiger Bildtyp: ${file.name}`);
+        setGlobalError(`Невалиден тип изображение: ${file.name}`);
         return false;
       }
       if (file.size > MAX_IMAGE_SIZE) {
-        setGlobalError(`Bild zu groß: ${file.name}. Max. 10 MB`);
+        setGlobalError(`Изображението е твърде голямо: ${file.name}. Макс. 10 MB`);
         return false;
       }
       return true;
@@ -180,7 +180,7 @@ export function AnimalWizard() {
       });
     } catch (err) {
       logger.error('Error uploading images', err instanceof Error ? err : new Error(String(err)));
-      setGlobalError('Fehler beim Hochladen der Bilder');
+      setGlobalError('Грешка при качване на изображенията');
     } finally {
       setUploadingImages(false);
     }
@@ -192,11 +192,11 @@ export function AnimalWizard() {
 
     const validFiles = Array.from(files).filter((file) => {
       if (!isAllowedVideoType(file.type)) {
-        setGlobalError(`Ungültiger Videotyp: ${file.name}`);
+        setGlobalError(`Невалиден тип видео: ${file.name}`);
         return false;
       }
       if (file.size > MAX_VIDEO_SIZE) {
-        setGlobalError(`Video zu groß: ${file.name}. Max. 100 MB`);
+        setGlobalError(`Видеото е твърде голямо: ${file.name}. Макс. 100 MB`);
         return false;
       }
       return true;
@@ -228,7 +228,7 @@ export function AnimalWizard() {
       setUploadedVideos((prev) => [...prev, ...storageIds]);
     } catch (err) {
       logger.error('Error uploading videos', err instanceof Error ? err : new Error(String(err)));
-      setGlobalError('Fehler beim Hochladen der Videos');
+      setGlobalError('Грешка при качване на видеото');
     } finally {
       setUploadingVideos(false);
     }
@@ -262,10 +262,10 @@ export function AnimalWizard() {
       setCompletedSteps([]);
       setErrors({});
       
-      alert('Tierprofil erfolgreich erstellt!');
+      alert('Профилът на животното е създаден успешно!');
     } catch (err) {
       logger.error('Error creating animal', err instanceof Error ? err : new Error(String(err)));
-      setGlobalError('Fehler beim Erstellen des Tierprofils');
+      setGlobalError('Грешка при създаване на профила на животното');
     } finally {
       setIsSubmitting(false);
     }
@@ -311,8 +311,8 @@ export function AnimalWizard() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Neues Tier hinzufügen</h1>
-        <p className="text-muted-foreground mt-2">Създаване на нов профил на животно</p>
+        <h1 className="text-3xl font-bold text-foreground">Създаване на нов профил на животно</h1>
+        <p className="text-muted-foreground mt-2">Neues Tier hinzufügen</p>
       </div>
 
       <div className="mb-8">
