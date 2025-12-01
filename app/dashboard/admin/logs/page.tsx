@@ -3,6 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PawLoader } from '@/components/layout/PawLoader';
 import {
   Select,
   SelectContent,
@@ -11,7 +12,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { api } from '@/convex/_generated/api';
-import { useConvexAuth, useQuery } from 'convex/react';
+import { useAdminGuard } from '@/lib/hooks/useAdminGuard';
+import { useQuery } from 'convex/react';
 import { useState } from 'react';
 
 type AuditAction =
@@ -30,7 +32,9 @@ type AuditAction =
   | 'DISTRIBUTION_SUCCESS'
   | 'DISTRIBUTION_FAILURE'
   | 'MATCHPFOTE_SYNC_SUCCESS'
-  | 'MATCHPFOTE_SYNC_FAILURE';
+  | 'MATCHPFOTE_SYNC_FAILURE'
+  | 'ACCESS_DENIED'
+  | 'RATE_LIMIT_EXCEEDED';
 
 type TargetType = 'animal' | 'user' | 'invitation' | 'system';
 
@@ -51,6 +55,8 @@ const ACTION_LABELS: Record<AuditAction, string> = {
   DISTRIBUTION_FAILURE: 'Verteilung fehlgeschlagen',
   MATCHPFOTE_SYNC_SUCCESS: 'matchpfote Sync erfolgreich',
   MATCHPFOTE_SYNC_FAILURE: 'matchpfote Sync fehlgeschlagen',
+  ACCESS_DENIED: '🔒 Zugriff verweigert',
+  RATE_LIMIT_EXCEEDED: '⏱️ Rate Limit überschritten',
 };
 
 const TARGET_LABELS: Record<TargetType, string> = {
@@ -97,14 +103,16 @@ function formatRelativeTime(timestamp: number): string {
 }
 
 export default function AuditLogsPage() {
-  const { isLoading, isAuthenticated } = useConvexAuth();
+  // Admin guard - redirects non-admins to dashboard
+  const { isLoading: isGuardLoading, isAdmin } = useAdminGuard();
+  
   const [actionFilter, setActionFilter] = useState<AuditAction | 'all'>('all');
   const [targetFilter, setTargetFilter] = useState<TargetType | 'all'>('all');
   const [cursor, setCursor] = useState<number | undefined>(undefined);
 
   const logsResult = useQuery(
     api.auditLog.list,
-    isAuthenticated
+    isAdmin
       ? {
           action: actionFilter === 'all' ? undefined : actionFilter,
           targetType: targetFilter === 'all' ? undefined : targetFilter,
@@ -116,11 +124,21 @@ export default function AuditLogsPage() {
 
   const stats = useQuery(
     api.auditLog.getStats,
-    isAuthenticated ? { days: 7 } : 'skip'
+    isAdmin ? { days: 7 } : 'skip'
   );
 
-  if (isLoading || !logsResult) {
-    return <div className="p-8">Laden...</div>;
+  // Show loading while checking admin status
+  if (isGuardLoading) {
+    return <PawLoader text="Berechtigungen werden geprüft..." />;
+  }
+
+  // If not admin, the hook will redirect - show nothing while redirecting
+  if (!isAdmin) {
+    return <PawLoader text="Weiterleitung..." />;
+  }
+
+  if (!logsResult) {
+    return <PawLoader text="Audit Logs werden geladen..." />;
   }
 
   const { logs, nextCursor } = logsResult;

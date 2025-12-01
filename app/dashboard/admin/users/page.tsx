@@ -6,18 +6,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PawLoader } from '@/components/layout/PawLoader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
+import { useAdminGuard } from '@/lib/hooks/useAdminGuard';
 import { logger } from '@/lib/logger';
-import { useConvexAuth, useMutation, useQuery } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { useState } from 'react';
 
 export default function UsersPage() {
-  const { isLoading, isAuthenticated } = useConvexAuth();
+  // Admin guard - redirects non-admins to dashboard
+  const { isLoading: isGuardLoading, isAdmin } = useAdminGuard();
+  
   const users = useQuery(
     api.users.list,
-    isAuthenticated ? undefined : 'skip'
+    isAdmin ? undefined : 'skip'
   );
   const updateRole = useMutation(api.users.updateRole);
   const deleteUser = useMutation(api.users.remove);
@@ -30,6 +34,16 @@ export default function UsersPage() {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteSuccess, setInviteSuccess] = useState(false);
+
+  // Show loading while checking admin status
+  if (isGuardLoading) {
+    return <PawLoader text="Berechtigungen werden geprüft..." />;
+  }
+
+  // If not admin, the hook will redirect - show nothing while redirecting
+  if (!isAdmin) {
+    return <PawLoader text="Weiterleitung..." />;
+  }
 
   const handleRoleChange = async (userId: Id<'users'>, newRole: 'admin' | 'input' | 'manager') => {
     setLoading(userId);
@@ -89,8 +103,8 @@ export default function UsersPage() {
     }
   };
 
-  if (isLoading || users === undefined) {
-    return <div>Laden...</div>;
+  if (users === undefined) {
+    return <PawLoader text="Benutzer werden geladen..." />;
   }
 
   const getRoleBadgeColor = (role: string) => {

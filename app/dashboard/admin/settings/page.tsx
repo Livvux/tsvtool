@@ -6,6 +6,8 @@ import { api } from '@/convex/_generated/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { PawLoader } from '@/components/layout/PawLoader';
+import { useAdminGuard } from '@/lib/hooks/useAdminGuard';
 
 type ApiStatus = 'configured' | 'not_configured' | 'error' | 'checking';
 
@@ -60,14 +62,19 @@ function getApiIcon(name: string) {
 }
 
 export default function SettingsPage() {
+  // Admin guard - redirects non-admins to dashboard
+  const { isLoading: isGuardLoading, isAdmin } = useAdminGuard();
+  
   const [apiStatuses, setApiStatuses] = useState<ApiCheckResult[]>([]);
   const [isChecking, setIsChecking] = useState(false);
   const [lastFullCheck, setLastFullCheck] = useState<Date | null>(null);
   
   const checkAllApiStatus = useAction(api.apiStatus.checkAllApiStatus);
 
-  // Initial load - show placeholder states
+  // Initial load - show placeholder states (only when admin)
   useEffect(() => {
+    if (!isAdmin) return;
+    
     setApiStatuses([
       { name: 'Übersetzung', status: 'checking', configured: false, message: 'Wird geprüft...' },
       { name: 'WordPress', status: 'checking', configured: false, message: 'Wird geprüft...' },
@@ -82,7 +89,17 @@ export default function SettingsPage() {
     // Auto-check on mount
     handleCheckAll();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isAdmin]);
+
+  // Show loading while checking admin status
+  if (isGuardLoading) {
+    return <PawLoader text="Berechtigungen werden geprüft..." />;
+  }
+
+  // If not admin, the hook will redirect - show nothing while redirecting
+  if (!isAdmin) {
+    return <PawLoader text="Weiterleitung..." />;
+  }
 
   const handleCheckAll = async () => {
     setIsChecking(true);
