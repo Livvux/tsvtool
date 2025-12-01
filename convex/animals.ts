@@ -235,7 +235,7 @@ export const search = query({
     const animals = await ctx.db.query('animals').collect();
 
     const filtered = animals
-      .filter((animal) => {
+      .filter((animal: Doc<'animals'>) => {
         const nameMatch = animal.name.toLowerCase().includes(searchLower);
         const breedMatch = animal.breed.toLowerCase().includes(searchLower);
         const locationMatch = animal.location.toLowerCase().includes(searchLower);
@@ -244,7 +244,7 @@ export const search = query({
       })
       .slice(0, limit);
 
-    return filtered.map((animal) => ({
+    return filtered.map((animal: Doc<'animals'>) => ({
       _id: animal._id,
       name: animal.name,
       animal: animal.animal,

@@ -140,13 +140,13 @@ export const list = query({
 
     // Apply filters
     if (args.action) {
-      logs = logs.filter((log) => log.action === args.action);
+      logs = logs.filter((log: Doc<'auditLogs'>) => log.action === args.action);
     }
     if (args.targetType) {
-      logs = logs.filter((log) => log.targetType === args.targetType);
+      logs = logs.filter((log: Doc<'auditLogs'>) => log.targetType === args.targetType);
     }
     if (args.userId) {
-      logs = logs.filter((log) => log.userId === args.userId);
+      logs = logs.filter((log: Doc<'auditLogs'>) => log.userId === args.userId);
     }
 
     // Limit results
@@ -209,7 +209,7 @@ export const getStats = query({
 
     // Count errors
     const errorCount = logs.filter(
-      (log) =>
+      (log: Doc<'auditLogs'>) =>
         log.action.includes('FAILURE') ||
         log.action === 'VALIDATION_FAILURE' ||
         log.action === 'TRANSLATION_FAILURE' ||

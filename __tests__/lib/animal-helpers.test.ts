@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 // Mock React cache since it's not available in test environment
 vi.mock('react', () => ({
-  cache: (fn: Function) => fn,
+  cache: <T,>(fn: (arg: T) => T) => fn,
 }));
 
 import { getStatusColor, getStatusBadge, formatDateTime } from '@/lib/animal-helpers';

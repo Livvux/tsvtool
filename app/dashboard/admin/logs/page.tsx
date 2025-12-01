@@ -197,7 +197,7 @@ export default function AuditLogsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Alle Aktionen</SelectItem>
-                  {Object.entries(ACTION_LABELS).map(([value, label]) => (
+                  {Object.entries(ACTION_LABELS).map(([value, label]: [string, string]) => (
                     <SelectItem key={value} value={value}>
                       {label}
                     </SelectItem>
@@ -219,7 +219,7 @@ export default function AuditLogsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Alle Typen</SelectItem>
-                  {Object.entries(TARGET_LABELS).map(([value, label]) => (
+                  {Object.entries(TARGET_LABELS).map(([value, label]: [string, string]) => (
                     <SelectItem key={value} value={value}>
                       {label}
                     </SelectItem>
@@ -325,14 +325,14 @@ export default function AuditLogsPage() {
 
 function LogDetails({ details }: { details: string }) {
   try {
-    const parsed = JSON.parse(details);
+    const parsed = JSON.parse(details) as Record<string, unknown>;
     const entries = Object.entries(parsed);
     
     if (entries.length === 0) return null;
 
     return (
       <div className="mt-2 p-2 bg-muted rounded-md text-xs">
-        {entries.map(([key, value]) => (
+        {entries.map(([key, value]: [string, unknown]) => (
           <div key={key} className="flex gap-2">
             <span className="font-medium text-muted-foreground">{key}:</span>
             <span className="text-foreground">

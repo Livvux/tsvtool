@@ -88,7 +88,7 @@ export default function SettingsPage() {
     setIsChecking(true);
     
     // Set all to checking state
-    setApiStatuses(prev => prev.map(api => ({ ...api, status: 'checking' as ApiStatus, message: 'Wird geprüft...' })));
+    setApiStatuses(prev => prev.map((api: ApiCheckResult) => ({ ...api, status: 'checking' as ApiStatus, message: 'Wird geprüft...' })));
     
     try {
       const results = await checkAllApiStatus({});
@@ -96,7 +96,7 @@ export default function SettingsPage() {
       setLastFullCheck(new Date());
     } catch (error) {
       console.error('Failed to check API status:', error);
-      setApiStatuses(prev => prev.map(api => ({ 
+      setApiStatuses(prev => prev.map((api: ApiCheckResult) => ({ 
         ...api, 
         status: 'error' as ApiStatus, 
         message: 'Prüfung fehlgeschlagen' 
@@ -107,9 +107,9 @@ export default function SettingsPage() {
   };
 
   // Count statuses
-  const configuredCount = apiStatuses.filter(api => api.status === 'configured').length;
-  const errorCount = apiStatuses.filter(api => api.status === 'error').length;
-  const notConfiguredCount = apiStatuses.filter(api => api.status === 'not_configured').length;
+  const configuredCount = apiStatuses.filter((api: ApiCheckResult) => api.status === 'configured').length;
+  const errorCount = apiStatuses.filter((api: ApiCheckResult) => api.status === 'error').length;
+  const notConfiguredCount = apiStatuses.filter((api: ApiCheckResult) => api.status === 'not_configured').length;
 
   return (
     <div className="space-y-6">
@@ -172,7 +172,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {apiStatuses.map((api) => (
+            {apiStatuses.map((api: ApiCheckResult) => (
               <div 
                 key={api.name}
                 className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/5 transition-colors"

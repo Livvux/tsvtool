@@ -359,7 +359,7 @@ export const distributeAnimal = internalAction({
 
       // Log audit entry - success or partial success
       const successCount = Object.values(results).filter(Boolean).length;
-      const failureCount = Object.values(results).filter((v) => !v).length;
+      const failureCount = Object.values(results).filter((v: boolean) => !v).length;
       
       if (successCount > 0) {
         await ctx.runMutation(internal.auditLog.createInternal, {
@@ -371,7 +371,7 @@ export const distributeAnimal = internalAction({
             results, 
             successCount, 
             failureCount,
-            platforms: Object.entries(results).filter(([, v]) => v).map(([k]) => k)
+            platforms: Object.entries(results).filter(([, v]: [string, boolean]) => v).map(([k]: [string, boolean]) => k)
           }),
         });
       }
@@ -386,7 +386,7 @@ export const distributeAnimal = internalAction({
             results, 
             successCount, 
             failureCount,
-            failedPlatforms: Object.entries(results).filter(([, v]) => !v).map(([k]) => k)
+            failedPlatforms: Object.entries(results).filter(([, v]: [string, boolean]) => !v).map(([k]: [string, boolean]) => k)
           }),
         });
       }

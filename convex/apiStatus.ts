@@ -474,7 +474,7 @@ export const checkAllApiStatus = action({
     ]);
 
     logger.info('API status check completed', { 
-      configured: results.filter(r => r.configured).length,
+      configured: results.filter((r: ApiCheckResult) => r.configured).length,
       total: results.length 
     });
 

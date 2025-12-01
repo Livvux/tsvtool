@@ -4,10 +4,12 @@ import type { NextConfig } from 'next';
 let withBundleAnalyzer = (config: NextConfig) => config;
 if (process.env.ANALYZE === 'true') {
   try {
-    withBundleAnalyzer = require('@next/bundle-analyzer')({
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const bundleAnalyzer = require('@next/bundle-analyzer');
+    withBundleAnalyzer = bundleAnalyzer({
       enabled: true,
     });
-  } catch (error) {
+  } catch {
     // Bundle analyzer not installed, skip it
     console.warn('@next/bundle-analyzer not found. Install it with: pnpm add -D @next/bundle-analyzer');
   }
