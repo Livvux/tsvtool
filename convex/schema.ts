@@ -21,7 +21,10 @@ export const auditActionValidator = v.union(
   v.literal('DISTRIBUTION_SUCCESS'),
   v.literal('DISTRIBUTION_FAILURE'),
   v.literal('MATCHPFOTE_SYNC_SUCCESS'),
-  v.literal('MATCHPFOTE_SYNC_FAILURE')
+  v.literal('MATCHPFOTE_SYNC_FAILURE'),
+  // Security Actions
+  v.literal('ACCESS_DENIED'),
+  v.literal('RATE_LIMIT_EXCEEDED')
 );
 
 const schema = defineSchema({
@@ -87,6 +90,15 @@ const schema = defineSchema({
   })
     .index('email', ['email'])
     .index('used', ['used']),
+
+  // Rate limiting table for tracking action frequency
+  rateLimits: defineTable({
+    userId: v.id('users'),
+    action: v.string(), // Action type (e.g., 'USER_INVITE', 'USER_DELETE')
+    timestamp: v.number(), // Unix timestamp of the action
+  })
+    .index('userId_action', ['userId', 'action'])
+    .index('timestamp', ['timestamp']),
 
   // Animals table
   animals: defineTable({

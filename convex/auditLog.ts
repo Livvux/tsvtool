@@ -20,7 +20,9 @@ export type AuditAction =
   | 'DISTRIBUTION_SUCCESS'
   | 'DISTRIBUTION_FAILURE'
   | 'MATCHPFOTE_SYNC_SUCCESS'
-  | 'MATCHPFOTE_SYNC_FAILURE';
+  | 'MATCHPFOTE_SYNC_FAILURE'
+  | 'ACCESS_DENIED'
+  | 'RATE_LIMIT_EXCEEDED';
 
 /**
  * Helper function to get the current user from Clerk authentication.
