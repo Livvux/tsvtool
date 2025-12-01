@@ -4,7 +4,12 @@ import { internal } from './_generated/api';
 import { Doc } from './_generated/dataModel';
 import { logger } from '../lib/logger';
 
-async function translateText(text: string, apiKey: string): Promise<string> {
+type TranslationService = 'google' | 'microsoft';
+
+/**
+ * Translate text using Google Translate API
+ */
+async function translateWithGoogle(text: string, apiKey: string): Promise<string> {
   const url = `https://translation.googleapis.com/language/translate/v2`;
   
   const response = await fetch(url, {
@@ -22,20 +27,98 @@ async function translateText(text: string, apiKey: string): Promise<string> {
   });
 
   if (!response.ok) {
-    throw new Error(`Translation API error: ${response.status}`);
+    const errorText = await response.text();
+    throw new Error(`Google Translate API error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
   return data.data.translations[0].translatedText;
 }
 
+/**
+ * Translate text using Microsoft Azure Translator API
+ * @see https://learn.microsoft.com/en-us/azure/ai-services/translator/text-translation/reference/v3/translate
+ */
+async function translateWithMicrosoft(
+  text: string, 
+  apiKey: string, 
+  region: string
+): Promise<string> {
+  const endpoint = 'https://api.cognitive.microsofttranslator.com';
+  const url = `${endpoint}/translate?api-version=3.0&from=bg&to=de`;
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Ocp-Apim-Subscription-Key': apiKey,
+      'Ocp-Apim-Subscription-Region': region,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify([{ Text: text }]),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Microsoft Translator API error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  return data[0].translations[0].text;
+}
+
+/**
+ * Translate text using configured service (Google or Microsoft)
+ */
+async function translateText(text: string): Promise<string> {
+  const service = (process.env.TRANSLATION_SERVICE?.toLowerCase() || 'google') as TranslationService;
+  
+  if (service === 'microsoft') {
+    const apiKey = process.env.AZURE_TRANSLATOR_KEY;
+    const region = process.env.AZURE_TRANSLATOR_REGION;
+    
+    if (!apiKey || !region) {
+      throw new Error('Microsoft Azure Translator not configured (AZURE_TRANSLATOR_KEY, AZURE_TRANSLATOR_REGION)');
+    }
+    
+    return translateWithMicrosoft(text, apiKey, region);
+  }
+  
+  // Default: Google Translate
+  const apiKey = process.env.GOOGLE_TRANSLATE_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('Google Translate API key not configured (GOOGLE_TRANSLATE_API_KEY)');
+  }
+  
+  return translateWithGoogle(text, apiKey);
+}
+
+/**
+ * Get current translation service configuration status
+ */
+function getTranslationServiceConfig(): { service: TranslationService; configured: boolean } {
+  const service = (process.env.TRANSLATION_SERVICE?.toLowerCase() || 'google') as TranslationService;
+  
+  if (service === 'microsoft') {
+    const configured = !!(process.env.AZURE_TRANSLATOR_KEY && process.env.AZURE_TRANSLATOR_REGION);
+    return { service: 'microsoft', configured };
+  }
+  
+  const configured = !!process.env.GOOGLE_TRANSLATE_API_KEY;
+  return { service: 'google', configured };
+}
+
 // Translate animal profile after status change to AKZEPTIERT
 export const translateAnimalProfile = internalAction({
   args: { animalId: v.id('animals') },
   handler: async (ctx, args) => {
-    const apiKey = process.env.GOOGLE_TRANSLATE_API_KEY;
-    if (!apiKey) {
-      logger.error('Google Translate API key not configured', undefined, { action: 'translateAnimalProfile' });
+    const config = getTranslationServiceConfig();
+    
+    if (!config.configured) {
+      logger.error(`Translation service "${config.service}" not configured`, undefined, { 
+        action: 'translateAnimalProfile',
+        service: config.service,
+      });
       return;
     }
 
@@ -48,39 +131,36 @@ export const translateAnimalProfile = internalAction({
     }
 
     try {
+      logger.info(`Starting translation with ${config.service}`, { 
+        animalId: args.animalId,
+        service: config.service,
+      });
+      
       // Translate fields
       const translatedFields: Partial<Doc<'animals'>> = {};
 
       if (animal.descShort) {
-        translatedFields.descLong = await translateText(animal.descShort, apiKey);
+        translatedFields.descLong = await translateText(animal.descShort);
       }
 
       if (animal.characteristics) {
-        const translatedCharacteristics = await translateText(
-          animal.characteristics,
-          apiKey
-        );
-        translatedFields.characteristics = translatedCharacteristics;
+        translatedFields.characteristics = await translateText(animal.characteristics);
       }
 
       if (animal.compatibilityText) {
-        const translatedCompatibilityText = await translateText(
-          animal.compatibilityText,
-          apiKey
-        );
-        translatedFields.compatibilityText = translatedCompatibilityText;
+        translatedFields.compatibilityText = await translateText(animal.compatibilityText);
       }
 
       if (animal.diseases) {
-        translatedFields.diseases = await translateText(animal.diseases, apiKey);
+        translatedFields.diseases = await translateText(animal.diseases);
       }
 
       if (animal.handicap) {
-        translatedFields.handicap = await translateText(animal.handicap, apiKey);
+        translatedFields.handicap = await translateText(animal.handicap);
       }
 
       if (animal.healthText) {
-        translatedFields.healthText = await translateText(animal.healthText, apiKey);
+        translatedFields.healthText = await translateText(animal.healthText);
       }
 
       // Update animal with translated fields
@@ -89,9 +169,15 @@ export const translateAnimalProfile = internalAction({
         translations: translatedFields,
       });
 
-      logger.info('Translation completed for animal', { animalId: args.animalId });
+      logger.info(`Translation completed with ${config.service}`, { 
+        animalId: args.animalId,
+        service: config.service,
+      });
     } catch (error) {
-      logger.error('Translation failed', error instanceof Error ? error : new Error(String(error)), { animalId: args.animalId });
+      logger.error('Translation failed', error instanceof Error ? error : new Error(String(error)), { 
+        animalId: args.animalId,
+        service: config.service,
+      });
       throw error;
     }
   },
@@ -115,4 +201,3 @@ export const updateAnimalTranslation = internalMutation({
     await ctx.db.patch(args.animalId, args.translations);
   },
 });
-

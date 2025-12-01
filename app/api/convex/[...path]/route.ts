@@ -1,11 +1,8 @@
 import { NextRequest } from 'next/server';
 import http from '@/convex/http';
 
-export const runtime = 'nodejs';
-
-// Cache GET requests for 30 seconds
-export const revalidate = 30;
-export const dynamic = 'force-dynamic';
+// Note: Route segment config exports (dynamic, runtime) are not compatible with cacheComponents
+// Convex handles its own caching, so this route is dynamic by default
 
 async function handleRequest(request: NextRequest, method: string) {
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
@@ -33,11 +30,15 @@ async function handleRequest(request: NextRequest, method: string) {
 
   // Set appropriate cache headers
   const headers = new Headers(response.headers);
+  // Convex handles its own caching, so we don't cache at the Next.js level
   if (method === 'GET') {
     headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
   } else {
     headers.set('Cache-Control', 'no-store');
   }
+  
+  // Add performance headers
+  headers.set('X-Content-Type-Options', 'nosniff');
 
   return new Response(response.body, {
     status: response.status,

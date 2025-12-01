@@ -10,12 +10,25 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-icons',
       '@radix-ui/react-label',
       '@radix-ui/react-select',
+      '@radix-ui/react-slot',
       'convex/react',
+      '@clerk/nextjs',
     ],
     turbopackFileSystemCacheForDev: true,
-    // Enable partial prerendering for better performance
-    // ppr has been merged into cacheComponents
-    cacheComponents: true,
+    // Optimize CSS for production
+    optimizeCss: true,
+  },
+  
+  // Enable partial prerendering for better performance
+  // ppr has been merged into cacheComponents (moved out of experimental in Next.js 16)
+  cacheComponents: true,
+
+  // Compiler optimizations
+  compiler: {
+    // Remove console.log in production (keep error and warn)
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
   },
 
   // Optimize images

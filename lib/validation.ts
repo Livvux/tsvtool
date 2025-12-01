@@ -14,8 +14,9 @@ export const validateDateFormat = cache((dateString: string): boolean => {
   );
 });
 
-export const validateRequired = cache((value: string | undefined): boolean => {
-  return value !== undefined && value.trim().length > 0;
+export const validateRequired = cache((value: string | undefined | null): boolean => {
+  if (value === undefined || value === null) return false;
+  return value.trim().length > 0;
 });
 
 export const validateYear = cache((yearString: string): boolean => {

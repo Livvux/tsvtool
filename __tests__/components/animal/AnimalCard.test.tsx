@@ -36,10 +36,11 @@ describe('AnimalCard', () => {
 
   it('should render animal details', () => {
     render(<AnimalCard animal={mockAnimal} />);
-    expect(screen.getByText(/Art:/)).toBeInTheDocument();
-    expect(screen.getByText(/Rasse:/)).toBeInTheDocument();
-    expect(screen.getByText(/Geschlecht:/)).toBeInTheDocument();
-    expect(screen.getByText(/Ort:/)).toBeInTheDocument();
+    // New design shows breed, gender, location and animal type
+    expect(screen.getByText('Labrador')).toBeInTheDocument();
+    expect(screen.getByText('weiblich')).toBeInTheDocument();
+    expect(screen.getByText('Test Location')).toBeInTheDocument();
+    expect(screen.getByText('Hund')).toBeInTheDocument();
   });
 
   it('should render status badge', () => {
@@ -62,5 +63,20 @@ describe('AnimalCard', () => {
     render(<AnimalCard animal={animalWithDesc} />);
     expect(screen.getByText('Long description')).toBeInTheDocument();
   });
-});
 
+  it('should render descShort when descLong is not provided', () => {
+    render(<AnimalCard animal={mockAnimal} />);
+    expect(screen.getByText('Test description')).toBeInTheDocument();
+  });
+
+  it('should show female symbol for weiblich gender', () => {
+    render(<AnimalCard animal={mockAnimal} />);
+    expect(screen.getByText('♀')).toBeInTheDocument();
+  });
+
+  it('should show male symbol for männlich gender', () => {
+    const maleAnimal = { ...mockAnimal, gender: 'männlich' as const };
+    render(<AnimalCard animal={maleAnimal} />);
+    expect(screen.getByText('♂')).toBeInTheDocument();
+  });
+});

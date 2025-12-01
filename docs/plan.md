@@ -1,6 +1,8 @@
 # Tierverwaltungs-Tool
 
-**Stack:** Next.js 16 + Convex
+**Stack:** Next.js 16 + Convex + Clerk Authentication
+
+**Letzte Aktualisierung:** 2025-12-01
 
 ## 1\. Komponenten & Akteure
 
@@ -37,10 +39,38 @@
 
 ### E. Externe Ausgaben (Distribution)
 
-  * Website (TSVStrassenpfoten.de - WordPress CMS)
-  * Facebook Page
-  * Instagram Page
-  * X
+  * Website (TSVStrassenpfoten.de - WordPress CMS) ✅ Implementiert
+  * Facebook Page ✅ Implementiert
+  * Instagram Page ⚠️ Placeholder (benötigt Graph API /media + /media_publish)
+  * X ⚠️ Placeholder (benötigt OAuth 1.0a)
+  * matchpfote ✅ Implementiert (mit Rate Limiting & Retry)
+
+-----
+
+## 2.1 Route-Struktur (aktuell)
+
+```
+app/
+├── (auth)/
+│   ├── sign-in/[[...sign-in]]/page.tsx  # Clerk Sign-In
+│   └── sign-up/[[...sign-up]]/page.tsx  # Clerk Sign-Up
+├── api/convex/[...path]/route.ts         # Convex API Proxy
+├── dashboard/
+│   ├── layout.tsx                        # Dashboard Layout mit Navigation
+│   ├── page.tsx                          # Dashboard Home (Role-based Redirect)
+│   ├── admin/
+│   │   ├── settings/page.tsx             # Admin Settings
+│   │   └── users/page.tsx                # User Management
+│   ├── animals/page.tsx                  # Finalisierte Tiere
+│   ├── input/page.tsx                    # Tier-Erstellung (Bulgarisch)
+│   └── manager/
+│       ├── [id]/page.tsx                 # Tier bearbeiten
+│       └── drafts/page.tsx               # Akzeptierte Entwürfe
+├── error.tsx                             # Error Boundary
+├── layout.tsx                            # Root Layout
+├── not-found.tsx                         # 404 Page
+└── page.tsx                              # Landing Page
+```
 
 -----
 
@@ -68,10 +98,54 @@ Der Prozess beschreibt den Weg eines Tierprofils von der Erstellung bis zur Ver�
 4.  **Distribution (Plattform -\> Externe Kanäle):**
 
       * Die "Zentrale Plattform" verteilt die finalisierten Tierdaten automatisch über ihre Schnittstellen an die verbundenen Kanäle:
-          * Website TSVStrassenpfoten.de - Wordpress - Application Password vorhanden.
-          * Facebook Page
-          * Instagram Page
-          * X
+          * Website TSVStrassenpfoten.de - Wordpress - Application Password vorhanden. ✅
+          * Facebook Page - Graph API v18.0 ✅
+          * Instagram Page - Graph API /media + /media_publish ⚠️ TODO
+          * X - OAuth 1.0a ⚠️ TODO
+          * matchpfote - REST API mit Rate Limiting ✅
+
+-----
+
+## 2.2 Environment Variables
+
+Benötigte Environment Variables (siehe `.env.example`):
+
+```bash
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+CLERK_ISSUER_URL=
+
+# Convex
+CONVEX_DEPLOYMENT=
+NEXT_PUBLIC_CONVEX_URL=
+
+# Google Translate
+GOOGLE_TRANSLATE_API_KEY=
+
+# WordPress (Avada Portfolio)
+WORDPRESS_URL=https://tsvstrassenpfoten.de
+WORDPRESS_APP_USERNAME=
+WORDPRESS_APP_PASSWORD=
+
+# Facebook (Graph API v18.0)
+FACEBOOK_PAGE_ID=
+FACEBOOK_ACCESS_TOKEN=
+
+# Instagram (Graph API - für Bild-Upload)
+INSTAGRAM_BUSINESS_ACCOUNT_ID=
+INSTAGRAM_ACCESS_TOKEN=
+
+# X/Twitter (OAuth 1.0a)
+TWITTER_API_KEY=
+TWITTER_API_SECRET=
+TWITTER_ACCESS_TOKEN=
+TWITTER_ACCESS_TOKEN_SECRET=
+
+# matchpfote
+MATCHPFOTE_API_KEY=
+MATCHPFOTE_API_URL=https://matchpfote.de/api/v1
+```
 
 -----
 

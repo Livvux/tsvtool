@@ -1,10 +1,7 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
-import { authTables } from '@convex-dev/auth/server';
 
 const schema = defineSchema({
-  ...authTables,
-  
   // Users table with roles
   users: defineTable({
     name: v.optional(v.string()),
@@ -18,9 +15,29 @@ const schema = defineSchema({
       v.literal('input'),
       v.literal('manager')
     ),
+    // Clerk ID (tokenIdentifier)
+    tokenIdentifier: v.string(),
   })
     .index('email', ['email'])
-    .index('role', ['role']),
+    .index('role', ['role'])
+    .index('tokenIdentifier', ['tokenIdentifier']),
+
+  // User invitations table - stores pending invitations with roles
+  userInvitations: defineTable({
+    email: v.string(),
+    role: v.union(
+      v.literal('admin'),
+      v.literal('input'),
+      v.literal('manager')
+    ),
+    clerkInvitationId: v.optional(v.string()),
+    used: v.boolean(),
+    usedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    createdBy: v.optional(v.string()), // Admin user ID who created the invitation
+  })
+    .index('email', ['email'])
+    .index('used', ['used']),
 
   // Animals table
   animals: defineTable({
@@ -70,8 +87,11 @@ const schema = defineSchema({
     ),
     compatibilityText: v.optional(v.string()),
     
-    // Media
+    // Media - Bilder
     gallery: v.array(v.string()),
+    // Media - Videos (Storage IDs)
+    videos: v.optional(v.array(v.string())),
+    // Externe Links
     videoLink: v.optional(v.string()),
     webLink: v.optional(v.string()),
     
@@ -119,4 +139,3 @@ const schema = defineSchema({
 });
 
 export default schema;
-

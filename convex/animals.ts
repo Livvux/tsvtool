@@ -1,8 +1,23 @@
 import { v } from 'convex/values';
-import { mutation, query } from './_generated/server';
-import { getAuthUserId } from '@convex-dev/auth/server';
+import { mutation, query, QueryCtx, MutationCtx } from './_generated/server';
 import { internal } from './_generated/api';
-import { Id } from './_generated/dataModel';
+import { Id, Doc } from './_generated/dataModel';
+
+/**
+ * Helper function to get the current user from Clerk authentication.
+ * Uses tokenIdentifier to look up the user in our database.
+ */
+async function getCurrentUser(ctx: QueryCtx | MutationCtx): Promise<Doc<'users'> | null> {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) return null;
+  
+  const user = await ctx.db
+    .query('users')
+    .withIndex('tokenIdentifier', (q) => q.eq('tokenIdentifier', identity.tokenIdentifier))
+    .first();
+  
+  return user;
+}
 
 // Create a new animal draft
 export const create = mutation({
@@ -33,18 +48,17 @@ export const create = mutation({
     location: v.string(),
     seekingHomeSince: v.optional(v.string()),
     gallery: v.array(v.string()),
+    videos: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error('Not authenticated');
-
-    const user = await ctx.db.get(userId);
-    if (!user) throw new Error('User not found');
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error('Not authenticated');
 
     const animalId = await ctx.db.insert('animals', {
       ...args,
+      videos: args.videos ?? [],
       status: 'ENTWURF',
-      createdBy: userId,
+      createdBy: user._id,
       createdByRole: user.role,
       descShortBG: args.descShort,
       distributedTo: {},
@@ -70,8 +84,8 @@ export const list = query({
     )),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error('Not authenticated');
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error('Not authenticated');
 
     if (args.status) {
       const status = args.status;
@@ -90,8 +104,8 @@ export const list = query({
 export const get = query({
   args: { id: v.id('animals') },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error('Not authenticated');
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error('Not authenticated');
 
     return await ctx.db.get(args.id);
   },
@@ -128,10 +142,11 @@ export const update = mutation({
     location: v.optional(v.string()),
     seekingHomeSince: v.optional(v.string()),
     gallery: v.optional(v.array(v.string())),
+    videos: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error('Not authenticated');
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error('Not authenticated');
 
     const { id, ...updates } = args;
     await ctx.db.patch(id, updates);
@@ -144,15 +159,56 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id('animals') },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error('Not authenticated');
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error('Not authenticated');
 
-    const user = await ctx.db.get(userId);
-    if (!user || user.role !== 'admin') {
+    if (user.role !== 'admin') {
       throw new Error('Only admins can delete animals');
     }
 
     await ctx.db.delete(args.id);
+  },
+});
+
+// Search animals by name, breed, or location
+export const search = query({
+  args: {
+    searchTerm: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error('Not authenticated');
+
+    const searchLower = args.searchTerm.toLowerCase().trim();
+    const limit = args.limit ?? 10;
+
+    if (!searchLower) {
+      return [];
+    }
+
+    // Get all animals and filter client-side (Convex doesn't have native text search)
+    const animals = await ctx.db.query('animals').collect();
+
+    const filtered = animals
+      .filter((animal) => {
+        const nameMatch = animal.name.toLowerCase().includes(searchLower);
+        const breedMatch = animal.breed.toLowerCase().includes(searchLower);
+        const locationMatch = animal.location.toLowerCase().includes(searchLower);
+        const typeMatch = animal.animal.toLowerCase().includes(searchLower);
+        return nameMatch || breedMatch || locationMatch || typeMatch;
+      })
+      .slice(0, limit);
+
+    return filtered.map((animal) => ({
+      _id: animal._id,
+      name: animal.name,
+      animal: animal.animal,
+      breed: animal.breed,
+      location: animal.location,
+      status: animal.status,
+      thumbnailId: animal.gallery[0] ?? null,
+    }));
   },
 });
 
@@ -168,8 +224,12 @@ export const updateStatus = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error('Not authenticated');
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error('Not authenticated');
+
+    if (user.role !== 'manager' && user.role !== 'admin') {
+      throw new Error('Unauthorized: Only managers and admins can update status');
+    }
 
     const updates: {
       status: typeof args.status;
@@ -180,7 +240,7 @@ export const updateStatus = mutation({
     } = { status: args.status };
 
     if (args.status === 'AKZEPTIERT') {
-      updates.reviewedBy = userId;
+      updates.reviewedBy = user._id;
       updates.reviewedAt = Date.now();
 
       // Trigger translation
@@ -188,7 +248,7 @@ export const updateStatus = mutation({
         animalId: args.id,
       });
     } else if (args.status === 'FINALISIERT') {
-      updates.finalizedBy = userId;
+      updates.finalizedBy = user._id;
       updates.finalizedAt = Date.now();
 
       // Trigger distribution
@@ -206,4 +266,3 @@ export const updateStatus = mutation({
     return args.id;
   },
 });
-

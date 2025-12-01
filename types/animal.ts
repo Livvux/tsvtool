@@ -39,7 +39,7 @@ export interface AnimalFormData {
   compatibleChildren: CompatibilityStatus;
   compatibilityText?: string;
   
-  // Media
+  // Media - Externe Links
   videoLink?: string;
   webLink?: string;
   
@@ -49,5 +49,49 @@ export interface AnimalFormData {
   // Location
   location: string;
   seekingHomeSince?: string;
+}
+
+/**
+ * Erlaubte Video-MIME-Types für Upload
+ */
+export const ALLOWED_VIDEO_TYPES = [
+  'video/mp4',
+  'video/webm',
+  'video/quicktime', // .mov
+  'video/x-msvideo', // .avi
+] as const;
+
+/**
+ * Erlaubte Bild-MIME-Types für Upload
+ */
+export const ALLOWED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+] as const;
+
+/**
+ * Max. Dateigröße für Videos (100 MB)
+ */
+export const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
+
+/**
+ * Max. Dateigröße für Bilder (10 MB)
+ */
+export const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+
+/**
+ * Prüft, ob ein MIME-Type ein erlaubtes Video ist
+ */
+export function isAllowedVideoType(mimeType: string): boolean {
+  return (ALLOWED_VIDEO_TYPES as readonly string[]).includes(mimeType);
+}
+
+/**
+ * Prüft, ob ein MIME-Type ein erlaubtes Bild ist
+ */
+export function isAllowedImageType(mimeType: string): boolean {
+  return (ALLOWED_IMAGE_TYPES as readonly string[]).includes(mimeType);
 }
 

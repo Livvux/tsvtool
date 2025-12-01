@@ -1,8 +1,76 @@
-import { internalAction, internalMutation, internalQuery } from './_generated/server';
+"use node";
+
+import { internalAction } from './_generated/server';
 import { v } from 'convex/values';
 import { internal } from './_generated/api';
-import { Doc } from './_generated/dataModel';
+import { Doc, Id } from './_generated/dataModel';
 import { logger } from '../lib/logger';
+import crypto from 'crypto';
+
+// Helper: Generate OAuth 1.0a signature for X/Twitter
+function generateOAuth1Signature(
+  method: string,
+  url: string,
+  params: Record<string, string>,
+  consumerSecret: string,
+  tokenSecret: string
+): string {
+  const sortedParams = Object.keys(params)
+    .sort()
+    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+    .join('&');
+  
+  const signatureBase = [
+    method.toUpperCase(),
+    encodeURIComponent(url),
+    encodeURIComponent(sortedParams),
+  ].join('&');
+  
+  const signingKey = `${encodeURIComponent(consumerSecret)}&${encodeURIComponent(tokenSecret)}`;
+  
+  return crypto
+    .createHmac('sha1', signingKey)
+    .update(signatureBase)
+    .digest('base64');
+}
+
+// Helper: Generate OAuth 1.0a header for X/Twitter
+function generateOAuth1Header(
+  method: string,
+  url: string,
+  apiKey: string,
+  apiSecret: string,
+  accessToken: string,
+  accessTokenSecret: string,
+  additionalParams: Record<string, string> = {}
+): string {
+  const oauthParams: Record<string, string> = {
+    oauth_consumer_key: apiKey,
+    oauth_nonce: crypto.randomBytes(16).toString('hex'),
+    oauth_signature_method: 'HMAC-SHA1',
+    oauth_timestamp: Math.floor(Date.now() / 1000).toString(),
+    oauth_token: accessToken,
+    oauth_version: '1.0',
+    ...additionalParams,
+  };
+  
+  const signature = generateOAuth1Signature(
+    method,
+    url,
+    oauthParams,
+    apiSecret,
+    accessTokenSecret
+  );
+  
+  oauthParams.oauth_signature = signature;
+  
+  const headerParts = Object.keys(oauthParams)
+    .sort()
+    .map((key) => `${encodeURIComponent(key)}="${encodeURIComponent(oauthParams[key])}"`)
+    .join(', ');
+  
+  return `OAuth ${headerParts}`;
+}
 
 // WordPress distribution (Avada Portfolio)
 async function distributeToWordPress(animal: Doc<'animals'>): Promise<boolean> {
@@ -95,8 +163,11 @@ async function distributeToFacebook(animal: Doc<'animals'>): Promise<boolean> {
   }
 }
 
-// Instagram distribution
-async function distributeToInstagram(animal: Doc<'animals'>): Promise<boolean> {
+// Instagram distribution - Graph API /media + /media_publish
+async function distributeToInstagram(
+  animal: Doc<'animals'>,
+  imageUrl: string | null
+): Promise<boolean> {
   const accountId = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID;
   const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
 
@@ -105,20 +176,82 @@ async function distributeToInstagram(animal: Doc<'animals'>): Promise<boolean> {
     return false;
   }
 
+  if (!imageUrl) {
+    logger.warn('Instagram distribution skipped - no public image URL available', { 
+      animalId: animal._id, 
+      platform: 'instagram' 
+    });
+    return false;
+  }
+
   try {
-    const caption = `🐾 ${animal.name}\n\n${animal.descLong || animal.descShort}`;
+    const caption = `🐾 ${animal.name}\n\n${animal.descLong || animal.descShort}\n\n📍 ${animal.location}\n\n#adoption #tierschutz #tsvstrassenpfoten #${animal.animal.toLowerCase()}`;
     
-    // Note: Instagram requires media URLs for posting
-    // This is a placeholder - actual implementation would need image URLs
-    logger.warn('Instagram distribution placeholder - needs image URL', { animalId: animal._id, platform: 'instagram' });
+    // Step 1: Create media container
+    const containerResponse = await fetch(
+      `https://graph.facebook.com/v18.0/${accountId}/media`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_url: imageUrl,
+          caption,
+          access_token: accessToken,
+        }),
+      }
+    );
+
+    if (!containerResponse.ok) {
+      const errorData = await containerResponse.text();
+      throw new Error(`Instagram container creation failed: ${containerResponse.status} - ${errorData}`);
+    }
+
+    const containerData = await containerResponse.json();
+    const containerId = containerData.id;
+
+    if (!containerId) {
+      throw new Error('Instagram container ID not returned');
+    }
+
+    // Step 2: Wait for container to be ready (Instagram processes the image)
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    // Step 3: Publish the media
+    const publishResponse = await fetch(
+      `https://graph.facebook.com/v18.0/${accountId}/media_publish`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          creation_id: containerId,
+          access_token: accessToken,
+        }),
+      }
+    );
+
+    if (!publishResponse.ok) {
+      const errorData = await publishResponse.text();
+      throw new Error(`Instagram publish failed: ${publishResponse.status} - ${errorData}`);
+    }
+
+    const publishData = await publishResponse.json();
+    
+    logger.info('Successfully distributed to Instagram', { 
+      animalId: animal._id, 
+      platform: 'instagram',
+      postId: publishData.id 
+    });
     return true;
   } catch (error) {
-    logger.error('Instagram distribution failed', error instanceof Error ? error : new Error(String(error)), { animalId: animal._id, platform: 'instagram' });
+    logger.error('Instagram distribution failed', error instanceof Error ? error : new Error(String(error)), { 
+      animalId: animal._id, 
+      platform: 'instagram' 
+    });
     return false;
   }
 }
 
-// X (Twitter) distribution
+// X (Twitter) distribution - OAuth 1.0a
 async function distributeToX(animal: Doc<'animals'>): Promise<boolean> {
   const apiKey = process.env.TWITTER_API_KEY;
   const apiSecret = process.env.TWITTER_API_SECRET;
@@ -131,14 +264,52 @@ async function distributeToX(animal: Doc<'animals'>): Promise<boolean> {
   }
 
   try {
-    const tweetText = `🐾 ${animal.name}\n\n${(animal.descLong || animal.descShort).substring(0, 200)}...\n\n${animal.webLink || ''}`;
+    // Prepare tweet text (max 280 characters)
+    const description = (animal.descLong || animal.descShort).substring(0, 150);
+    const link = animal.webLink ? `\n${animal.webLink}` : '';
+    const hashtags = `\n#adoption #${animal.animal.toLowerCase()} #tierschutz`;
+    const tweetText = `🐾 ${animal.name}\n\n${description}...${link}${hashtags}`.substring(0, 280);
     
-    // Note: X API v2 requires OAuth 1.0a signature
-    // This is a placeholder - actual implementation would need OAuth library
-    logger.warn('X (Twitter) distribution placeholder - needs OAuth implementation', { animalId: animal._id, platform: 'x' });
+    // X API v2 endpoint for creating tweets
+    const url = 'https://api.twitter.com/2/tweets';
+    
+    // Generate OAuth 1.0a header
+    const authHeader = generateOAuth1Header(
+      'POST',
+      url,
+      apiKey,
+      apiSecret,
+      accessToken,
+      accessTokenSecret
+    );
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: tweetText }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`X API error: ${response.status} - ${errorData}`);
+    }
+
+    const data = await response.json();
+    
+    logger.info('Successfully distributed to X', { 
+      animalId: animal._id, 
+      platform: 'x',
+      tweetId: data.data?.id 
+    });
     return true;
   } catch (error) {
-    logger.error('X distribution failed', error instanceof Error ? error : new Error(String(error)), { animalId: animal._id, platform: 'x' });
+    logger.error('X distribution failed', error instanceof Error ? error : new Error(String(error)), { 
+      animalId: animal._id, 
+      platform: 'x' 
+    });
     return false;
   }
 }
@@ -147,12 +318,23 @@ async function distributeToX(animal: Doc<'animals'>): Promise<boolean> {
 export const distributeAnimal = internalAction({
   args: { animalId: v.id('animals') },
   handler: async (ctx, args) => {
-    const animal = await ctx.runQuery(internal.distribution.getAnimal, {
+    const animal = await ctx.runQuery(internal.distributionHelpers.getAnimal, {
       animalId: args.animalId,
     });
 
     if (!animal) {
       throw new Error('Animal not found');
+    }
+
+    // Get first image URL for Instagram (needs public URL)
+    let firstImageUrl: string | null = null;
+    if (animal.gallery && animal.gallery.length > 0) {
+      const r2PublicUrl = process.env.R2_PUBLIC_URL;
+      if (r2PublicUrl) {
+        firstImageUrl = `${r2PublicUrl}/${animal.gallery[0]}`;
+      } else {
+        logger.warn('R2_PUBLIC_URL not configured - Instagram distribution may fail', { animalId: args.animalId });
+      }
     }
 
     const results = {
@@ -163,14 +345,14 @@ export const distributeAnimal = internalAction({
     };
 
     try {
-      // Distribute to all platforms
-      results.wordpress = await distributeToWordPress(animal);
-      results.facebook = await distributeToFacebook(animal);
-      results.instagram = await distributeToInstagram(animal);
-      results.x = await distributeToX(animal);
+      // Distribute to all platforms with retry logic
+      results.wordpress = await retryWithBackoff(() => distributeToWordPress(animal), 'wordpress', args.animalId);
+      results.facebook = await retryWithBackoff(() => distributeToFacebook(animal), 'facebook', args.animalId);
+      results.instagram = await retryWithBackoff(() => distributeToInstagram(animal, firstImageUrl), 'instagram', args.animalId);
+      results.x = await retryWithBackoff(() => distributeToX(animal), 'x', args.animalId);
 
       // Update distribution status
-      await ctx.runMutation(internal.distribution.updateDistributionStatus, {
+      await ctx.runMutation(internal.distributionHelpers.updateDistributionStatus, {
         animalId: args.animalId,
         results,
       });
@@ -183,35 +365,42 @@ export const distributeAnimal = internalAction({
   },
 });
 
-// Internal query to get animal
-export const getAnimal = internalQuery({
-  args: { animalId: v.id('animals') },
-  handler: async (ctx, args) => {
-    return await ctx.db.get(args.animalId);
-  },
-});
+// Retry helper with exponential backoff
+async function retryWithBackoff(
+  fn: () => Promise<boolean>,
+  platform: string,
+  animalId: Id<'animals'>,
+  maxRetries: number = 3
+): Promise<boolean> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const result = await fn();
+      if (result) return true;
+      
+      // If result is false (not an error), don't retry
+      if (attempt === 0) return false;
+    } catch (error) {
+      logger.warn(`Distribution attempt ${attempt + 1} failed for ${platform}`, { 
+        animalId, 
+        platform,
+        attempt: attempt + 1,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
+      if (attempt < maxRetries - 1) {
+        // Exponential backoff: 1s, 2s, 4s
+        const delay = Math.pow(2, attempt) * 1000;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  logger.error(`Distribution failed after ${maxRetries} attempts`, undefined, { 
+    animalId, 
+    platform,
+    maxRetries 
+  });
+  return false;
+}
 
-// Internal mutation to update distribution status
-export const updateDistributionStatus = internalMutation({
-  args: {
-    animalId: v.id('animals'),
-    results: v.object({
-      wordpress: v.boolean(),
-      facebook: v.boolean(),
-      instagram: v.boolean(),
-      x: v.boolean(),
-    }),
-  },
-  handler: async (ctx, args) => {
-    await ctx.db.patch(args.animalId, {
-      distributedTo: {
-        wordpress: args.results.wordpress,
-        facebook: args.results.facebook,
-        instagram: args.results.instagram,
-        x: args.results.x,
-        distributedAt: Date.now(),
-      },
-    });
-  },
-});
 

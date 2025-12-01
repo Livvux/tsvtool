@@ -1,0 +1,17 @@
+{
+  "buildCommand": "NODE_OPTIONS='--max-old-space-size=8192' pnpm build",
+  "devCommand": "pnpm dev",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "regions": ["fra1"],
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "crons": [],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
+
