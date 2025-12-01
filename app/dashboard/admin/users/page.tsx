@@ -14,6 +14,7 @@ import { useAdminGuard } from '@/lib/hooks/useAdminGuard';
 import { logger } from '@/lib/logger';
 import { useMutation, useQuery } from 'convex/react';
 import { useState } from 'react';
+import { CheckIcon, Cross2Icon } from '@radix-ui/react-icons';
 
 export default function UsersPage() {
   // Admin guard - redirects non-admins to dashboard
@@ -23,8 +24,14 @@ export default function UsersPage() {
     api.users.list,
     isAdmin ? undefined : 'skip'
   );
+  const pendingUsers = useQuery(
+    api.users.listPending,
+    isAdmin ? undefined : 'skip'
+  );
   const updateRole = useMutation(api.users.updateRole);
   const deleteUser = useMutation(api.users.remove);
+  const approveUser = useMutation(api.users.approve);
+  const rejectUser = useMutation(api.users.reject);
   const [loading, setLoading] = useState<string | null>(null);
   
   // Invitation form state
@@ -103,9 +110,38 @@ export default function UsersPage() {
     }
   };
 
-  if (users === undefined) {
+  const handleApprove = async (userId: Id<'users'>) => {
+    setLoading(userId);
+    try {
+      await approveUser({ userId });
+    } catch (error) {
+      logger.error('Error approving user', error instanceof Error ? error : new Error(String(error)), { userId });
+      alert('Fehler beim Freischalten des Benutzers');
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  const handleReject = async (userId: Id<'users'>) => {
+    if (!confirm('Möchten Sie diesen Benutzer wirklich ablehnen? Der Benutzer wird gelöscht.')) return;
+    
+    setLoading(userId);
+    try {
+      await rejectUser({ userId });
+    } catch (error) {
+      logger.error('Error rejecting user', error instanceof Error ? error : new Error(String(error)), { userId });
+      alert('Fehler beim Ablehnen des Benutzers');
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  if (users === undefined || pendingUsers === undefined) {
     return <PawLoader text="Benutzer werden geladen..." />;
   }
+
+  // Filter out pending users from the main list
+  const approvedUsers = users.filter(u => u.isApproved);
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -228,8 +264,73 @@ export default function UsersPage() {
         </Card>
       )}
 
-      <div className="grid gap-4">
-        {users.map((user) => (
+      {/* Pending Users Section */}
+      {pendingUsers.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-accent">Ausstehende Freischaltungen</h2>
+            <Badge variant="destructive" className="rounded-full">
+              {pendingUsers.length}
+            </Badge>
+          </div>
+          <div className="grid gap-4">
+            {pendingUsers.map((pendingUser) => (
+              <Card key={pendingUser._id} className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg">{pendingUser.name || 'Kein Name'}</CardTitle>
+                      <CardDescription>{pendingUser.email}</CardDescription>
+                    </div>
+                    <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                      Ausstehend
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm text-muted-foreground">Gewünschte Rolle:</Label>
+                      <Badge className={getRoleBadgeColor(pendingUser.role)}>
+                        {getRoleLabel(pendingUser.role)}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => handleApprove(pendingUser._id)}
+                        disabled={loading === pendingUser._id}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <CheckIcon className="w-4 h-4 mr-1" />
+                        Freischalten
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleReject(pendingUser._id)}
+                        disabled={loading === pendingUser._id}
+                      >
+                        <Cross2Icon className="w-4 h-4 mr-1" />
+                        Ablehnen
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Approved Users Section */}
+      <div className="space-y-4">
+        {pendingUsers.length > 0 && (
+          <h2 className="text-xl font-semibold text-accent">Aktive Benutzer</h2>
+        )}
+        <div className="grid gap-4">
+        {approvedUsers.map((user) => (
           <Card key={user._id}>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -274,9 +375,10 @@ export default function UsersPage() {
             </CardContent>
           </Card>
         ))}
+        </div>
       </div>
 
-      {users.length === 0 && (
+      {approvedUsers.length === 0 && pendingUsers.length === 0 && (
         <Card>
           <CardContent className="pt-6 text-center text-textPrimary">
             Keine Benutzer gefunden

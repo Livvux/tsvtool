@@ -277,8 +277,20 @@ export default function DashboardLayout({
     }
   }, [isLoaded, isSignedIn, router]);
 
+  // Redirect to pending-approval page if user is not approved
+  useEffect(() => {
+    if (user && !user.isApproved) {
+      router.push('/dashboard/pending-approval');
+    }
+  }, [user, router]);
+
   if (!isLoaded || !isSignedIn || (isStoring && user === undefined) || !user) {
     return <PawLoader text={!user ? "Profil wird geladen..." : "Laden..."} />;
+  }
+
+  // Show loading while redirecting unapproved users
+  if (!user.isApproved) {
+    return <PawLoader text="Weiterleitung..." />;
   }
 
   return (
