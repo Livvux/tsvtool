@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { PawLoader } from '@/components/layout/PawLoader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { api } from '@/convex/_generated/api';
-import type { Id } from '@/convex/_generated/dataModel';
+import type { Doc, Id } from '@/convex/_generated/dataModel';
 import { useAdminGuard } from '@/lib/hooks/useAdminGuard';
 import { logger } from '@/lib/logger';
 import { useMutation, useQuery } from 'convex/react';
@@ -142,7 +142,7 @@ export default function UsersPage() {
 
   // Filter out pending users from the main list
   // Note: undefined isApproved is treated as approved (backward compatibility)
-  const approvedUsers = users.filter(u => u.isApproved !== false);
+  const approvedUsers = users.filter((u: Doc<'users'>) => u.isApproved !== false);
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {

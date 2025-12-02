@@ -2,7 +2,6 @@ import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { LoadingSpinner } from '@/components/layout/LoadingSpinner';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import type { Metadata, Viewport } from 'next';
-import Script from 'next/script';
 import { Suspense } from 'react';
 import { AuthProvider } from './AuthProvider';
 import './globals.css';
@@ -67,13 +66,6 @@ export default function RootLayout({
   return (
     <html lang="de" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        {process.env.NODE_ENV === 'development' && (
-          <Script
-            src="//unpkg.com/react-grab/dist/index.global.js"
-            crossOrigin="anonymous"
-            strategy="beforeInteractive"
-          />
-        )}
         <ThemeProvider>
           <ErrorBoundary>
             {/* CACHE COMPONENTS FIX: Suspense boundary for ClerkProvider which accesses cookies */}

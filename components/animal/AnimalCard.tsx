@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { getStatusColor } from '@/lib/animal-helpers';
 import { getR2PublicUrl } from '@/lib/storage';
+import { sanitizeText } from '@/lib/sanitize';
 import type { Animal } from '@/types/animal';
 import { 
   CalendarIcon, 
@@ -79,9 +80,9 @@ export function AnimalCard({ animal, onClick }: AnimalCardProps) {
         <div className="flex justify-between items-start">
            <div>
               <h3 className="text-2xl font-bold text-accent group-hover:text-primary transition-colors line-clamp-1 tracking-tight">
-                {animal.name}
+                {sanitizeText(animal.name)}
               </h3>
-              <p className="text-base text-muted-foreground font-medium mt-1">{animal.breed}</p>
+              <p className="text-base text-muted-foreground font-medium mt-1">{sanitizeText(animal.breed)}</p>
            </div>
            <Badge variant="secondary" className="font-normal text-sm px-3 py-1">
              {animal.animal}
@@ -97,7 +98,7 @@ export function AnimalCard({ animal, onClick }: AnimalCardProps) {
           </div>
           <div className="flex items-center gap-2" title="Standort">
             <SewingPinIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-            <span className="truncate">{animal.location}</span>
+            <span className="truncate">{sanitizeText(animal.location)}</span>
           </div>
           {animal.birthDate && (
             <div className="flex items-center gap-2" title="Geburtsdatum">
@@ -115,11 +116,11 @@ export function AnimalCard({ animal, onClick }: AnimalCardProps) {
 
         {animal.descLong ? (
           <p className="text-base text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
-            {animal.descLong}
+            {sanitizeText(animal.descLong)}
           </p>
         ) : animal.descShort ? (
            <p className="text-base text-muted-foreground mt-2 line-clamp-2 leading-relaxed italic opacity-80">
-            {animal.descShort}
+            {sanitizeText(animal.descShort)}
           </p>
         ) : null}
       </CardContent>

@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { sanitizeText } from '@/lib/sanitize';
 import { 
   CheckCircle2, 
   PawPrint, 
@@ -39,7 +40,7 @@ function SummaryItem({ label, value, required }: SummaryItemProps) {
       {isEmpty ? (
         <span className="text-sm text-muted-foreground/50 italic">—</span>
       ) : (
-        <span className="text-sm font-medium text-foreground text-right max-w-[60%]">{value}</span>
+        <span className="text-sm font-medium text-foreground text-right max-w-[60%]">{sanitizeText(value)}</span>
       )}
     </div>
   );
@@ -229,7 +230,7 @@ export function SummaryStep({ formData, uploadedImages, uploadedVideos }: Summar
               Описание / Beschreibung <span className="text-destructive">*</span>
             </span>
             {formData.descShort ? (
-              <p className="text-sm text-foreground">{formData.descShort}</p>
+              <p className="text-sm text-foreground">{sanitizeText(formData.descShort)}</p>
             ) : (
               <span className="text-sm text-muted-foreground/50 italic">—</span>
             )}
@@ -272,7 +273,7 @@ export function SummaryStep({ formData, uploadedImages, uploadedVideos }: Summar
               Видео линк / Video-Link
             </span>
             {formData.videoLink ? (
-              <span className="text-sm font-medium text-foreground truncate max-w-[50%]">{formData.videoLink}</span>
+              <span className="text-sm font-medium text-foreground truncate max-w-[50%]">{sanitizeText(formData.videoLink)}</span>
             ) : (
               <span className="text-sm text-muted-foreground/50 italic">—</span>
             )}
@@ -283,7 +284,7 @@ export function SummaryStep({ formData, uploadedImages, uploadedVideos }: Summar
               Уеб линк / Web-Link
             </span>
             {formData.webLink ? (
-              <span className="text-sm font-medium text-foreground truncate max-w-[50%]">{formData.webLink}</span>
+              <span className="text-sm font-medium text-foreground truncate max-w-[50%]">{sanitizeText(formData.webLink)}</span>
             ) : (
               <span className="text-sm text-muted-foreground/50 italic">—</span>
             )}

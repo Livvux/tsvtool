@@ -33,6 +33,7 @@ import {
 } from '@radix-ui/react-icons';
 import { getR2PublicUrls } from '@/lib/storage';
 import { getStatusColor } from '@/lib/animal-helpers';
+import { sanitizeText } from '@/lib/sanitize';
 import { cn } from '@/lib/utils';
 
 // Dynamically import DistributionStatus to reduce initial bundle size
@@ -121,9 +122,9 @@ export default function EditAnimalPage() {
                 {animal.status}
              </Badge>
            </div>
-           <h1 className="text-4xl font-bold text-accent tracking-tight mb-1">{animal.name}</h1>
+           <h1 className="text-4xl font-bold text-accent tracking-tight mb-1">{sanitizeText(animal.name)}</h1>
            <p className="text-xl text-muted-foreground">
-             {animal.breed} • {animal.gender} • {animal.location}
+             {sanitizeText(animal.breed)} • {sanitizeText(animal.gender)} • {sanitizeText(animal.location)}
            </p>
         </div>
         <div className="flex gap-4">
@@ -198,7 +199,7 @@ export default function EditAnimalPage() {
                 <div className="bg-muted p-6 rounded-xl border border-border">
                   <Label className="text-muted-foreground text-xs uppercase tracking-wider mb-3 block font-semibold">Original (Bulgarisch)</Label>
                   <p className="text-base text-foreground/80 whitespace-pre-wrap italic leading-relaxed">
-                    {animal.descShortBG}
+                    {sanitizeText(animal.descShortBG)}
                   </p>
                 </div>
              </CardContent>
@@ -218,7 +219,7 @@ export default function EditAnimalPage() {
                  <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border">
                    <Label className="text-sm font-medium text-muted-foreground">Original (Bulgarisch)</Label>
                    <p className="text-base text-foreground/80 whitespace-pre-wrap italic leading-relaxed">
-                     {animal.characteristicsBG}
+                     {sanitizeText(animal.characteristicsBG)}
                    </p>
                  </div>
                )}
