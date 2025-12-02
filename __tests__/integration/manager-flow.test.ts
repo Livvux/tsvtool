@@ -88,7 +88,7 @@ describe('Manager Flow Integration', () => {
     it('should validate required fields', () => {
       const requiredFields = ['name', 'breed', 'color', 'characteristics', 'descShort', 'location'];
       
-      requiredFields.forEach(field => {
+      requiredFields.forEach((field: string) => {
         expect(mockAnimalDraft[field as keyof typeof mockAnimalDraft]).toBeTruthy();
       });
     });
@@ -149,7 +149,7 @@ describe('Manager Flow Integration', () => {
         'healthText', 'diseases', 'handicap', 'videoLink', 'webLink'
       ];
       
-      editableFields.forEach(field => {
+      editableFields.forEach((field: string) => {
         // All these fields should be editable
         expect(field in mockAnimalAccepted || field === 'healthText' || field === 'diseases' || field === 'handicap' || field === 'videoLink' || field === 'webLink').toBe(true);
       });
