@@ -1,0 +1,90 @@
+# =============================================================================
+# Stale Issue Management - TSVTool
+# =============================================================================
+# Automatically marks and closes stale issues and PRs.
+# =============================================================================
+
+name: 🕐 Stale
+
+on:
+  schedule:
+    # Run daily at midnight UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: 🕐 Mark Stale Issues
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🕐 Check for stale issues and PRs
+        uses: actions/stale@v9
+        with:
+          # Issue settings
+          stale-issue-message: |
+            👋 This issue has been automatically marked as stale because it has not had recent activity.
+            
+            It will be closed in **14 days** if no further activity occurs.
+            
+            If this issue is still relevant:
+            - Add a comment with an update
+            - Remove the `stale` label
+            
+            Thank you for your contribution! 🐾
+          
+          close-issue-message: |
+            🔒 This issue has been automatically closed due to inactivity.
+            
+            If you believe this issue should be reopened, please:
+            - Add a comment explaining why
+            - Open a new issue with updated information
+            
+            Thank you for your understanding! 🐾
+          
+          stale-issue-label: 'stale'
+          days-before-issue-stale: 60
+          days-before-issue-close: 14
+          
+          # PR settings
+          stale-pr-message: |
+            👋 This pull request has been automatically marked as stale because it has not had recent activity.
+            
+            It will be closed in **14 days** if no further activity occurs.
+            
+            If this PR is still relevant:
+            - Rebase and resolve any conflicts
+            - Add a comment with an update
+            - Remove the `stale` label
+            
+            Thank you for your contribution! 🐾
+          
+          close-pr-message: |
+            🔒 This pull request has been automatically closed due to inactivity.
+            
+            If you'd like to continue working on this:
+            - Open a new PR with your changes
+            - Reference this PR in your new submission
+            
+            Thank you for your understanding! 🐾
+          
+          stale-pr-label: 'stale'
+          days-before-pr-stale: 30
+          days-before-pr-close: 14
+          
+          # Labels to exempt from stale
+          exempt-issue-labels: 'pinned,security,critical,in-progress'
+          exempt-pr-labels: 'pinned,security,critical,in-progress,do-not-close'
+          
+          # Don't mark issues/PRs with these labels as stale
+          exempt-all-milestones: true
+          
+          # Operations per run
+          operations-per-run: 100
+          
+          # Remove stale label when updated
+          remove-stale-when-updated: true
+
