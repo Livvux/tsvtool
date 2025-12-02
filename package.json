@@ -59,7 +59,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "baseline-browser-mapping": "^2.8.32",
     "eslint": "^9.39.1",
-    "eslint-config-next": "^16.0.3",
+    "eslint-config-next": "^16.0.6",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "jsdom": "^27.2.0",
