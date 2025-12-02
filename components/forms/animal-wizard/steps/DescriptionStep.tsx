@@ -83,9 +83,9 @@ export function DescriptionStep({ formData, onUpdate, errors }: StepProps) {
           </div>
           
           {/* Translation info */}
-          <div className="mt-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900">
-            <p className="text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
-              <Globe className="w-4 h-4" />
+          <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/10">
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              <Globe className="w-4 h-4 text-primary" />
               <span>Текстът ще бъде автоматично преведен на немски / Der Text wird automatisch ins Deutsche übersetzt</span>
             </p>
           </div>
@@ -156,23 +156,23 @@ export function DescriptionStep({ formData, onUpdate, errors }: StepProps) {
       </Card>
 
       {/* Writing tips */}
-      <div className="flex items-start gap-3 p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900">
-        <BookOpen className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5" />
+      <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/5 border border-primary/10">
+        <BookOpen className="w-5 h-5 text-primary mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-green-900 dark:text-green-100">
+          <p className="text-sm font-medium text-foreground">
             Съвети за описанието / Tipps für die Beschreibung
           </p>
-          <ul className="text-sm text-green-700 dark:text-green-300 mt-2 space-y-1">
+          <ul className="text-sm text-muted-foreground mt-2 space-y-1">
             <li className="flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-green-600" />
+              <span className="w-1 h-1 rounded-full bg-primary" />
               Опишете какво прави животното специално
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-green-600" />
+              <span className="w-1 h-1 rounded-full bg-primary" />
               Споменете любими дейности или играчки
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-green-600" />
+              <span className="w-1 h-1 rounded-full bg-primary" />
               Beschreiben Sie, was das Tier besonders macht
             </li>
           </ul>

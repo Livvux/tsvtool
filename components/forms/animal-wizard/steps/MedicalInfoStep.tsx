@@ -242,13 +242,13 @@ export function MedicalInfoStep({ formData, onUpdate }: StepProps) {
       </Card>
 
       {/* Info box */}
-      <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900">
-        <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+      <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/5 border border-primary/10">
+        <Info className="w-5 h-5 text-primary mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+          <p className="text-sm font-medium text-foreground">
             Важно / Wichtig
           </p>
-          <p className="text-sm text-blue-700 dark:text-blue-300">
+          <p className="text-sm text-muted-foreground">
             Медицинската информация помага на бъдещите осиновители. 
             Medizinische Infos helfen zukünftigen Adoptiveltern.
           </p>
