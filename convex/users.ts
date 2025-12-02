@@ -1,6 +1,7 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { internal } from './_generated/api';
+import type { Doc } from './_generated/dataModel';
 import type { AuditAction } from './auditLog';
 import type { RateLimitResult } from './rateLimit';
 
@@ -125,7 +126,7 @@ export const listPending = query({
     // Get all users and filter for pending (isApproved === false)
     // Note: Users with isApproved === undefined are treated as approved (backward compatibility)
     const allUsers = await ctx.db.query('users').collect();
-    return allUsers.filter(u => u.isApproved === false);
+    return allUsers.filter((u: Doc<'users'>) => u.isApproved === false);
   },
 });
 

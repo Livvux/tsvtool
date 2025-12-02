@@ -114,6 +114,61 @@ export const list = query({
   },
 });
 
+// Get animals with pagination
+export const listPaginated = query({
+  args: {
+    status: v.optional(v.union(
+      v.literal('ENTWURF'),
+      v.literal('ABGELEHNT'),
+      v.literal('AKZEPTIERT'),
+      v.literal('FINALISIERT')
+    )),
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.id('animals')),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error('Not authenticated');
+
+    const limit = args.limit ?? 12;
+
+    let animalsQuery;
+
+    // Apply status filter if provided
+    if (args.status) {
+      const status = args.status;
+      animalsQuery = ctx.db
+        .query('animals')
+        .withIndex('status', (q) => q.eq('status', status));
+    } else {
+      animalsQuery = ctx.db.query('animals');
+    }
+
+    // Apply cursor if provided (for pagination)
+    if (args.cursor) {
+      const cursorAnimal = await ctx.db.get(args.cursor);
+      if (cursorAnimal) {
+        animalsQuery = animalsQuery.filter((q) => 
+          q.lt(q.field('_creationTime'), cursorAnimal._creationTime)
+        );
+      }
+    }
+
+    // Get results ordered by creation time (desc)
+    const animals = await animalsQuery.order('desc').take(limit + 1);
+
+    // Check if there are more results
+    const hasMore = animals.length > limit;
+    const results = hasMore ? animals.slice(0, limit) : animals;
+    const nextCursor = hasMore && results.length > 0 ? results[results.length - 1]._id : null;
+
+    return {
+      animals: results,
+      nextCursor,
+    };
+  },
+});
+
 // Get single animal by ID
 export const get = query({
   args: { id: v.id('animals') },

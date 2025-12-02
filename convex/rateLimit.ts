@@ -1,5 +1,6 @@
 import { v } from 'convex/values';
 import { internalMutation, internalQuery } from './_generated/server';
+import type { Doc } from './_generated/dataModel';
 
 // Rate limit configurations (actions per time window)
 const RATE_LIMITS: Record<string, { maxActions: number; windowMs: number }> = {
@@ -41,7 +42,7 @@ export const checkRateLimit = internalQuery({
     // Calculate reset time (when the oldest action in window expires)
     let resetAt = Date.now() + config.windowMs;
     if (recentActions.length > 0) {
-      const oldestInWindow = Math.min(...recentActions.map((a) => a.timestamp));
+      const oldestInWindow = Math.min(...recentActions.map((a: Doc<'rateLimits'>) => a.timestamp));
       resetAt = oldestInWindow + config.windowMs;
     }
 
