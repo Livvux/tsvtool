@@ -170,7 +170,7 @@ jobs:
 
       - name: 📊 Upload Coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-report
           path: coverage/
@@ -230,7 +230,7 @@ jobs:
         run: pnpm build
 
       - name: 📦 Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: nextjs-build
           path: |
