@@ -214,7 +214,7 @@ function main() {
   
   if (unknownVars.length > 0 && !dryRun) {
     console.log(`\n⚠️  Found ${unknownVars.length} variable(s) in .env.local that might need syncing:`);
-    unknownVars.forEach(key => {
+    unknownVars.forEach((key: string) => {
       console.log(`  - ${key}`);
     });
     console.log('\n💡 If these are used in convex/ functions, add them to CONVEX_ENV_VARS in this script.');
