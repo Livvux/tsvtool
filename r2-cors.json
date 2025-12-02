@@ -1,0 +1,31 @@
+{
+  "rules": [
+    {
+      "allowed": {
+        "origins": [
+          "http://localhost:3000",
+          "https://tsvstrassenpfoten.de",
+          "https://www.tsvstrassenpfoten.de",
+          "https://*.vercel.app"
+        ],
+        "methods": [
+          "GET",
+          "PUT",
+          "POST",
+          "DELETE",
+          "HEAD"
+        ],
+        "headers": [
+          "*"
+        ]
+      },
+      "exposed": [
+        "ETag",
+        "Content-Length",
+        "Content-Type"
+      ],
+      "maxAge": 3600
+    }
+  ]
+}
+
