@@ -74,17 +74,41 @@ export async function inviteUser(
       notify: true,
     });
 
-    // The role is stored in Clerk's publicMetadata and will be available
-    // when the user signs up. We also store it in Convex for redundancy.
-    // Note: The Convex storage happens via the storeInvitation mutation
-    // which can be called separately if needed. For now, we rely on
-    // Clerk's publicMetadata and the userInvitations table lookup in store mutation.
+    // Store invitation in Convex for role assignment during sign-up
+    // This ensures the role is correctly assigned when the user signs up
+    try {
+      await convex.mutation(api.users.storeInvitation, {
+        email: email,
+        role: role,
+        clerkInvitationId: invitation.id,
+        createdBy: currentUser._id, // Convex will serialize Id<"users"> to string
+      });
 
-    logger.info('User invitation created', {
-      emailAddress: email,
-      role,
-      invitationId: invitation.id,
-    });
+      logger.info('User invitation created and stored in Convex', {
+        emailAddress: email,
+        role,
+        invitationId: invitation.id,
+        convexUserId: currentUser._id,
+      });
+    } catch (convexError) {
+      // Log error but don't fail the invitation
+      // The invitation was already created in Clerk and email was sent
+      const errorMessage =
+        convexError instanceof Error ? convexError.message : 'Unknown error';
+      
+      logger.error(
+        'Failed to store invitation in Convex (invitation still sent via Clerk)',
+        convexError instanceof Error ? convexError : new Error(errorMessage),
+        {
+          emailAddress: email,
+          role,
+          invitationId: invitation.id,
+        }
+      );
+
+      // Continue - the invitation was sent via Clerk, even if Convex storage failed
+      // The user can still sign up, but might get default role
+    }
 
     return {
       success: true,
