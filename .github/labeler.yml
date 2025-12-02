@@ -1,0 +1,121 @@
+# =============================================================================
+# Labeler Configuration - TSVTool
+# =============================================================================
+# Defines rules for automatically labeling PRs based on changed files.
+# =============================================================================
+
+# Frontend changes
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/**/*'
+          - 'components/**/*'
+          - '*.css'
+          - 'tailwind.config.ts'
+
+# Backend changes (Convex)
+backend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'convex/**/*'
+
+# Configuration changes
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'next.config.ts'
+          - 'tsconfig.json'
+          - 'package.json'
+          - 'pnpm-lock.yaml'
+          - 'vercel.json'
+          - 'convex.json'
+          - 'eslint.config.mjs'
+          - 'vitest.config.ts'
+
+# CI/CD changes
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**/*'
+
+# Documentation changes
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**/*'
+          - '**/*.md'
+          - 'README.md'
+
+# Test changes
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '__tests__/**/*'
+          - '**/*.test.ts'
+          - '**/*.test.tsx'
+          - 'vitest.config.ts'
+          - 'vitest.setup.ts'
+
+# Types changes
+types:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'types/**/*'
+          - '**/*.d.ts'
+
+# UI Components
+ui:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'components/ui/**/*'
+
+# Animal feature
+feature/animals:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'components/animal/**/*'
+          - 'convex/animals.ts'
+          - 'app/dashboard/animals/**/*'
+          - 'app/dashboard/input/**/*'
+          - 'app/dashboard/manager/**/*'
+
+# Authentication
+auth:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'middleware.ts'
+          - 'convex/auth.config.ts'
+          - 'convex/users.ts'
+          - 'app/(auth)/**/*'
+          - 'app/AuthProvider.tsx'
+
+# Admin features
+admin:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/dashboard/admin/**/*'
+          - 'convex/auditLog.ts'
+
+# Distribution/Integration
+integration:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'convex/distribution.ts'
+          - 'convex/matchpfote.ts'
+          - 'convex/translation.ts'
+
+# Security sensitive
+security:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'middleware.ts'
+          - 'convex/auth.config.ts'
+          - '.github/workflows/security.yml'
+
+# Dependencies
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package.json'
+          - 'pnpm-lock.yaml'
+

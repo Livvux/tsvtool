@@ -1,0 +1,53 @@
+# =============================================================================
+# CODEOWNERS - TSVTool
+# =============================================================================
+# These owners will be requested for review when someone opens a pull request
+# that modifies code that they own.
+#
+# Order is important; the last matching pattern takes precedence.
+# =============================================================================
+
+# Default owners for everything in the repo
+*                           @tsvstrassenpfoten
+
+# =============================================================================
+# Frontend
+# =============================================================================
+/app/                       @tsvstrassenpfoten
+/components/                @tsvstrassenpfoten
+/lib/                       @tsvstrassenpfoten
+
+# =============================================================================
+# Backend (Convex)
+# =============================================================================
+/convex/                    @tsvstrassenpfoten
+
+# =============================================================================
+# Configuration
+# =============================================================================
+next.config.ts              @tsvstrassenpfoten
+tailwind.config.ts          @tsvstrassenpfoten
+tsconfig.json               @tsvstrassenpfoten
+package.json                @tsvstrassenpfoten
+pnpm-lock.yaml              @tsvstrassenpfoten
+
+# =============================================================================
+# CI/CD and DevOps
+# =============================================================================
+/.github/                   @tsvstrassenpfoten
+/vercel.json                @tsvstrassenpfoten
+/convex.json                @tsvstrassenpfoten
+
+# =============================================================================
+# Security-sensitive files (require extra review)
+# =============================================================================
+/middleware.ts              @tsvstrassenpfoten
+/convex/auth.config.ts      @tsvstrassenpfoten
+/convex/users.ts            @tsvstrassenpfoten
+
+# =============================================================================
+# Documentation
+# =============================================================================
+/docs/                      @tsvstrassenpfoten
+*.md                        @tsvstrassenpfoten
+
