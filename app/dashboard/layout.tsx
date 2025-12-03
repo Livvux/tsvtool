@@ -85,6 +85,17 @@ function DashboardLayoutInner({
                 {(effectiveRole === 'manager' || effectiveRole === 'admin') && (
                   <>
                     <Link 
+                      href="/dashboard/manager/entwurfe"
+                      className={cn(
+                        "text-sm font-medium transition-colors hover:text-primary",
+                        isActive('/dashboard/manager/entwurfe') 
+                          ? "text-primary font-semibold" 
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      Neue Entwürfe
+                    </Link>
+                    <Link 
                       href="/dashboard/manager/drafts"
                       className={cn(
                         "text-sm font-medium transition-colors hover:text-primary",
@@ -93,7 +104,7 @@ function DashboardLayoutInner({
                           : "text-muted-foreground"
                       )}
                     >
-                      Entwürfe
+                      Akzeptierte
                     </Link>
                     <Link 
                       href="/dashboard/animals"
@@ -202,13 +213,22 @@ function DashboardLayoutInner({
             {(effectiveRole === 'manager' || effectiveRole === 'admin') && (
               <>
                 <Link 
+                  href="/dashboard/manager/entwurfe"
+                  className={cn(
+                    "text-sm font-medium whitespace-nowrap",
+                    isActive('/dashboard/manager/entwurfe') ? "text-primary" : "text-muted-foreground"
+                  )}
+                >
+                  Neue Entwürfe
+                </Link>
+                <Link 
                   href="/dashboard/manager/drafts"
                   className={cn(
                     "text-sm font-medium whitespace-nowrap",
                     isActive('/dashboard/manager/drafts') ? "text-primary" : "text-muted-foreground"
                   )}
                 >
-                  Entwürfe
+                  Akzeptierte
                 </Link>
                 <Link 
                   href="/dashboard/animals"
