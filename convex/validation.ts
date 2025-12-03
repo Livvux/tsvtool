@@ -98,9 +98,13 @@ function validateAnimal(animal: Doc<'animals'>): { isValid: boolean; errors: Val
   };
 }
 
-// Validate animal after creation
+// Validate animal after creation or when manager accepts ENTWURF
 export const validateAnimalDraft = internalAction({
-  args: { animalId: v.id('animals') },
+  args: { 
+    animalId: v.id('animals'),
+    reviewedBy: v.optional(v.id('users')), // Manager who accepted the draft
+    reviewedAt: v.optional(v.number()), // Timestamp when accepted
+  },
   handler: async (ctx, args) => {
     const animal = await ctx.runQuery(internal.validation.getAnimal, {
       animalId: args.animalId,
@@ -113,10 +117,12 @@ export const validateAnimalDraft = internalAction({
     const validation = validateAnimal(animal);
 
     if (validation.isValid) {
-      // Set status to AKZEPTIERT
+      // Set status to AKZEPTIERT with review metadata
       await ctx.runMutation(internal.validation.updateAnimalStatus, {
         animalId: args.animalId,
         status: 'AKZEPTIERT',
+        reviewedBy: args.reviewedBy,
+        reviewedAt: args.reviewedAt,
       });
 
       // Trigger translation after status change to AKZEPTIERT
@@ -173,9 +179,24 @@ export const updateAnimalStatus = internalMutation({
       v.literal('AKZEPTIERT'),
       v.literal('FINALISIERT')
     ),
+    reviewedBy: v.optional(v.id('users')),
+    reviewedAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.animalId, { status: args.status });
+    const updates: {
+      status: typeof args.status;
+      reviewedBy?: typeof args.reviewedBy;
+      reviewedAt?: typeof args.reviewedAt;
+    } = { status: args.status };
+    
+    if (args.reviewedBy !== undefined) {
+      updates.reviewedBy = args.reviewedBy;
+    }
+    if (args.reviewedAt !== undefined) {
+      updates.reviewedAt = args.reviewedAt;
+    }
+    
+    await ctx.db.patch(args.animalId, updates);
   },
 });
 

@@ -78,10 +78,8 @@ export const create = mutation({
       details: JSON.stringify({ animal: args.animal, breed: args.breed }),
     });
 
-    // Trigger automatic validation
-    await ctx.scheduler.runAfter(0, internal.validation.validateAnimalDraft, {
-      animalId,
-    });
+    // Note: Validation is now triggered manually by manager when accepting ENTWURF
+    // No automatic validation on creation - manager reviews first
 
     return animalId;
   },
@@ -345,6 +343,20 @@ export const updateStatus = mutation({
     } = { status: args.status };
 
     if (args.status === 'AKZEPTIERT') {
+      // If changing from ENTWURF to AKZEPTIERT, validate first
+      if (previousStatus === 'ENTWURF') {
+        // Trigger validation - if valid, status becomes AKZEPTIERT, if invalid, becomes ABGELEHNT
+        // Pass manager info so validation can set reviewedBy and reviewedAt
+        await ctx.scheduler.runAfter(0, internal.validation.validateAnimalDraft, {
+          animalId: args.id,
+          reviewedBy: user._id,
+          reviewedAt: Date.now(),
+        });
+        // Note: Validation will update status itself, so we don't update here
+        // Return early - validation action will handle status update
+        return args.id;
+      }
+
       updates.reviewedBy = user._id;
       updates.reviewedAt = Date.now();
 

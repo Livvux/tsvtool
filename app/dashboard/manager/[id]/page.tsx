@@ -183,7 +183,7 @@ export default function EditAnimalPage() {
                  <Pencil2Icon className="w-6 h-6 text-primary" />
                  Beschreibung
                </CardTitle>
-               <CardDescription className="text-base mt-1">Deutsch & Original (Bulgarisch)</CardDescription>
+               <CardDescription className="text-base mt-1">Deutsch</CardDescription>
              </CardHeader>
              <CardContent className="p-8 space-y-8">
                 <div className="space-y-3">
@@ -195,12 +195,6 @@ export default function EditAnimalPage() {
                     rows={10}
                     className="bg-background leading-relaxed text-lg p-4"
                   />
-                </div>
-                <div className="bg-muted p-6 rounded-xl border border-border">
-                  <Label className="text-muted-foreground text-xs uppercase tracking-wider mb-3 block font-semibold">Original (Bulgarisch)</Label>
-                  <p className="text-base text-foreground/80 whitespace-pre-wrap italic leading-relaxed">
-                    {sanitizeText(animal.descShortBG)}
-                  </p>
                 </div>
              </CardContent>
           </Card>
