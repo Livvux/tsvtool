@@ -349,7 +349,9 @@ export const distributeAnimal = internalAction({
       results.wordpress = await retryWithBackoff(() => distributeToWordPress(animal), 'wordpress', args.animalId);
       results.facebook = await retryWithBackoff(() => distributeToFacebook(animal), 'facebook', args.animalId);
       results.instagram = await retryWithBackoff(() => distributeToInstagram(animal, firstImageUrl), 'instagram', args.animalId);
-      results.x = await retryWithBackoff(() => distributeToX(animal), 'x', args.animalId);
+      // X (Twitter) distribution is currently disabled
+      // results.x = await retryWithBackoff(() => distributeToX(animal), 'x', args.animalId);
+      results.x = false;
 
       // Update distribution status
       await ctx.runMutation(internal.distributionHelpers.updateDistributionStatus, {

@@ -13,11 +13,12 @@ interface PlatformStatus {
   icon: string;
 }
 
+// X (Twitter) distribution is currently disabled
 const platforms: PlatformStatus[] = [
   { name: 'WordPress', key: 'wordpress', icon: 'W' },
   { name: 'Facebook', key: 'facebook', icon: 'F' },
   { name: 'Instagram', key: 'instagram', icon: 'I' },
-  { name: 'X (Twitter)', key: 'x', icon: 'X' },
+  // { name: 'X (Twitter)', key: 'x', icon: 'X' }, // Disabled
   { name: 'matchpfote', key: 'matchpfote', icon: 'M' },
 ];
 
