@@ -311,32 +311,42 @@ async function checkInstagram(): Promise<ApiCheckResult> {
 }
 
 // Check X (Twitter) API - just check if credentials are configured
+// NOTE: X (Twitter) distribution is currently disabled
 function checkX(): ApiCheckResult {
-  const apiKey = process.env.TWITTER_API_KEY;
-  const apiSecret = process.env.TWITTER_API_SECRET;
-  const accessToken = process.env.TWITTER_ACCESS_TOKEN;
-  const accessTokenSecret = process.env.TWITTER_ACCESS_TOKEN_SECRET;
-
-  const allConfigured = isConfigured(apiKey) && isConfigured(apiSecret) && 
-                        isConfigured(accessToken) && isConfigured(accessTokenSecret);
-
-  if (!allConfigured) {
-    return {
-      name: 'X (Twitter)',
-      status: 'not_configured',
-      configured: false,
-      message: 'Zugangsdaten nicht vollständig konfiguriert',
-    };
-  }
-
-  // X API doesn't have a simple test endpoint, so we just verify credentials exist
+  // X (Twitter) integration is disabled - always return not_configured
   return {
     name: 'X (Twitter)',
-    status: 'configured',
-    configured: true,
-    message: 'Zugangsdaten konfiguriert (nicht live getestet)',
-    lastChecked: Date.now(),
+    status: 'not_configured',
+    configured: false,
+    message: 'Deaktiviert (Integration vorübergehend ausgeschaltet)',
   };
+  
+  // Original implementation (kept for reference):
+  // const apiKey = process.env.TWITTER_API_KEY;
+  // const apiSecret = process.env.TWITTER_API_SECRET;
+  // const accessToken = process.env.TWITTER_ACCESS_TOKEN;
+  // const accessTokenSecret = process.env.TWITTER_ACCESS_TOKEN_SECRET;
+  //
+  // const allConfigured = isConfigured(apiKey) && isConfigured(apiSecret) && 
+  //                       isConfigured(accessToken) && isConfigured(accessTokenSecret);
+  //
+  // if (!allConfigured) {
+  //   return {
+  //     name: 'X (Twitter)',
+  //     status: 'not_configured',
+  //     configured: false,
+  //     message: 'Zugangsdaten nicht vollständig konfiguriert',
+  //   };
+  // }
+  //
+  // // X API doesn't have a simple test endpoint, so we just verify credentials exist
+  // return {
+  //   name: 'X (Twitter)',
+  //   status: 'configured',
+  //   configured: true,
+  //   message: 'Zugangsdaten konfiguriert (nicht live getestet)',
+  //   lastChecked: Date.now(),
+  // };
 }
 
 // Check matchpfote API
@@ -478,7 +488,7 @@ export const checkAllApiStatus = action({
       checkWordPress(),
       checkFacebook(),
       checkInstagram(),
-      Promise.resolve(checkX()),
+      // Promise.resolve(checkX()), // X (Twitter) disabled
       checkMatchpfote(),
       checkR2Storage(),
       Promise.resolve(checkConvex()),

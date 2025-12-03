@@ -48,8 +48,8 @@ function getApiIcon(name: string) {
       return '📘';
     case 'instagram':
       return '📸';
-    case 'x (twitter)':
-      return '🐦';
+    // case 'x (twitter)': // Disabled
+    //   return '🐦';
     case 'matchpfote':
       return '🐾';
     case 'cloudflare r2':
@@ -80,7 +80,7 @@ export default function SettingsPage() {
       { name: 'WordPress', status: 'checking', configured: false, message: 'Wird geprüft...' },
       { name: 'Facebook', status: 'checking', configured: false, message: 'Wird geprüft...' },
       { name: 'Instagram', status: 'checking', configured: false, message: 'Wird geprüft...' },
-      { name: 'X (Twitter)', status: 'checking', configured: false, message: 'Wird geprüft...' },
+      // { name: 'X (Twitter)', status: 'checking', configured: false, message: 'Wird geprüft...' }, // Disabled
       { name: 'matchpfote', status: 'checking', configured: false, message: 'Wird geprüft...' },
       { name: 'Cloudflare R2', status: 'checking', configured: false, message: 'Wird geprüft...' },
       { name: 'Convex', status: 'checking', configured: false, message: 'Wird geprüft...' },
@@ -249,10 +249,12 @@ export default function SettingsPage() {
                 <h5 className="font-medium mb-1">Instagram</h5>
                 <code className="text-xs text-foreground/80 dark:text-muted-foreground">INSTAGRAM_BUSINESS_ACCOUNT_ID, INSTAGRAM_ACCESS_TOKEN</code>
               </div>
+              {/* X (Twitter) disabled - kept for reference
               <div className="p-3 rounded border">
                 <h5 className="font-medium mb-1">X (Twitter)</h5>
                 <code className="text-xs text-foreground/80 dark:text-muted-foreground">TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET</code>
               </div>
+              */}
               <div className="p-3 rounded border">
                 <h5 className="font-medium mb-1">matchpfote</h5>
                 <code className="text-xs text-foreground/80 dark:text-muted-foreground">MATCHPFOTE_API_KEY, MATCHPFOTE_API_URL</code>
